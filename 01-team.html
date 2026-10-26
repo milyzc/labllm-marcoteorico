@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IA en un equipo</title>
+<link rel="stylesheet" href="deck.css">
+<style>
+.pool,.bucket{display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;min-height:70px;border:2px dashed var(--line);border-radius:12px;padding:8px}
+.bucket{min-height:150px}
+.bucket.over{border-color:var(--accent);background:var(--panel2)}
+.bucket h3{width:100%;margin:0 0 4px;font-size:.8em}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:.68em;cursor:grab;user-select:none;max-width:100%}
+.chip.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,var(--panel))}
+.chip.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 15%,var(--panel))}
+.buckets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+@media(max-width:700px){.buckets{grid-template-columns:1fr}}
+#clsExplain{font-size:.75em;min-height:2.5em;margin-top:8px}
+</style>
+</head>
+<body>
+
+<section class="slide cover">
+  <p class="kicker">Enfoque 01</p>
+  <h1>IA en un equipo</h1>
+  <p class="lead">Cuando no es una persona usando IA sino un equipo entero: acuerdos sobre qué herramientas, qué datos, quién revisa y quién responde.</p>
+  <aside class="notes">Público mixto: líderes, devs, QA, gente de negocio. El foco es organizativo, no técnico.</aside>
+</section>
+
+<section class="slide">
+  <h2>El problema: cada uno por su lado</h2>
+  <div class="cols">
+    <div>
+      <ul>
+        <li>Cada persona usa la herramienta que conoce, con su cuenta personal.</li>
+        <li>Nadie sabe qué datos salieron ni hacia dónde.</li>
+        <li>Unos revisan lo que genera la IA, otros no.</li>
+        <li>Lo que alguien aprendió (un buen prompt, una configuración) no llega al resto.</li>
+      </ul>
+      <p>Esto se llama <b>shadow AI</b>: uso de IA fuera de lo que la organización conoce y controla.</p>
+    </div>
+    <div class="analogy">Es como si cada empleado guardara documentos de clientes en su pendrive personal. No hace falta mala intención para que sea un problema.</div>
+  </div>
+  <aside class="notes">Preguntar a la sala: ¿cuántas herramientas de IA distintas usa su equipo? Suele haber más de las que el líder cree.</aside>
+</section>
+
+<section class="slide">
+  <h2>Los cinco acuerdos de un equipo</h2>
+  <div class="cols c3">
+    <div class="card acc step"><h3>1. Herramientas aprobadas</h3><p>Cuáles, con qué cuenta (corporativa) y con qué condiciones de datos del proveedor.</p></div>
+    <div class="card acc step"><h3>2. Clasificación de datos</h3><p>Qué se puede compartir, qué hay que sanitizar y qué nunca.</p></div>
+    <div class="card acc step"><h3>3. Revisión humana</h3><p>Lo que produce la IA lo firma una persona: código, textos, decisiones.</p></div>
+    <div class="card acc step"><h3>4. Contexto compartido</h3><p>Configuraciones, prompts y reglas comunes en el repo, no en la cabeza de cada uno.</p></div>
+    <div class="card acc step"><h3>5. Qué hacer si algo sale mal</h3><p>A quién avisar y cómo, sin miedo a la sanción.</p></div>
+  </div>
+  <aside class="notes">Revelar de a uno. El resto del deck desarrolla cada acuerdo.</aside>
+</section>
+
+<section class="slide">
+  <h2>Clasificación de datos</h2>
+  <table>
+    <tr><th>Nivel</th><th>Ejemplos</th><th>¿Con IA?</th></tr>
+    <tr><td><span class="tag ok">Público</span></td><td>Documentación publicada, código open source, preguntas generales</td><td>Sí, cualquier herramienta aprobada</td></tr>
+    <tr><td><span class="tag">Interno</span></td><td>Código propio, arquitectura, tickets</td><td>Solo herramientas aprobadas con cuenta corporativa</td></tr>
+    <tr><td><span class="tag warn">Confidencial</span></td><td>Logs con datos de clientes, contratos, métricas de negocio</td><td>Sanitizar antes, o herramienta aprobada específicamente</td></tr>
+    <tr><td><span class="tag bad">Restringido</span></td><td>Credenciales, claves, datos de salud, sueldos, datos personales sensibles</td><td>Nunca</td></tr>
+  </table>
+  <p class="small muted" style="margin-top:10px"><b>Sanitizar</b>: reemplazar nombres, emails, IPs, dominios, tokens y montos por marcadores (<code>[EMAIL]</code>, <code>[HOST]</code>) antes de pegar.</p>
+  <aside class="notes">Adaptar los niveles a la clasificación que ya tenga la organización. Si no tiene, esta tabla es un buen punto de partida.</aside>
+</section>
+
+<section class="slide">
+  <h2>Ejercicio: ¿esto se puede pegar?</h2>
+  <p class="small muted">Arrastrá cada caso a una columna (o tocalo y después tocá la columna). Después, <b>Verificar</b>.</p>
+  <div class="pool" id="pool"></div>
+  <div class="buckets">
+    <div class="bucket" data-b="ok"><h3 style="color:var(--ok)">Se puede</h3></div>
+    <div class="bucket" data-b="san"><h3 style="color:var(--warn)">Sanitizar antes</h3></div>
+    <div class="bucket" data-b="no"><h3 style="color:var(--bad)">Nunca</h3></div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="b" id="clsCheck">Verificar</button>
+    <button class="b ghost" id="clsReset">Reiniciar</button>
+    <span id="clsScore" class="small"></span>
+  </div>
+  <div id="clsExplain" class="muted">Después de verificar, tocá un caso para ver por qué.</div>
+  <aside class="notes">Hacerlo en voz alta con la sala. Los casos ambiguos (código interno) dependen de la herramienta: esa es la discusión que vale la pena.</aside>
+</section>
+
+<section class="slide">
+  <h2>Revisión humana y responsabilidad</h2>
+  <div class="cols">
+    <div>
+      <ul>
+        <li>"Lo hizo la IA" no es una excusa: <b>quien lo usa, lo firma</b>.</li>
+        <li>El código generado pasa por el mismo review que cualquier otro (o más).</li>
+        <li>Errores típicos del código con IA: dependencias inventadas, validaciones faltantes, secretos hardcodeados, SQL armado con strings.</li>
+        <li>Textos y análisis: verificar cifras, fuentes y nombres.</li>
+      </ul>
+    </div>
+    <div class="analogy">La IA es un pasante muy rápido. Al pasante no se lo deja mandar un contrato a un cliente sin que alguien lo lea.</div>
+  </div>
+  <aside class="notes">Riesgos OWASP LLM05 (salida sin validar) y LLM09 (desinformación) llevados al proceso del equipo.</aside>
+</section>
+
+<section class="slide">
+  <h2>Contexto compartido</h2>
+  <div class="cols">
+    <div class="card ok"><h3>En el repo, versionado</h3><ul>
+      <li>Instrucciones para agentes (<code>CLAUDE.md</code>, <code>AGENTS.md</code>, reglas).</li>
+      <li>Permisos y hooks comunes (<code>.claude/settings.json</code>).</li>
+      <li>Skills y comandos para tareas repetidas.</li>
+    </ul></div>
+    <div class="card acc"><h3>Fuera del repo</h3><ul>
+      <li>Biblioteca de prompts que funcionan, por área.</li>
+      <li>Política de uso escrita y corta.</li>
+      <li>Canal para compartir aprendizajes y errores.</li>
+    </ul></div>
+  </div>
+  <p class="small" style="margin-top:12px">Ventaja: todos parten del mismo piso y los controles (permisos, hooks) aplican a todos. Detalle técnico en el <a href="03-dev.html">enfoque 03</a>.</p>
+  <aside class="notes">Lo compartido también se revisa: un cambio en CLAUDE.md o settings.json es un cambio de política y pasa por MR.</aside>
+</section>
+
+<section class="slide">
+  <h2>Roles</h2>
+  <table>
+    <tr><th>Quién</th><th>Qué hace</th></tr>
+    <tr><td><b>Liderazgo / seguridad</b></td><td>Aprueba herramientas, define la clasificación de datos, mantiene la política.</td></tr>
+    <tr><td><b>Tech lead</b></td><td>Mantiene la configuración compartida del repo y revisa sus cambios.</td></tr>
+    <tr><td><b>Cada persona</b></td><td>Usa lo aprobado, sanitiza, revisa lo que genera y reporta incidentes.</td></tr>
+    <tr><td><b>Plataforma / DevOps</b></td><td>Configura los agentes en CI/CD con permisos y secretos mínimos (<a href="05-cicd.html">enfoque 05</a>).</td></tr>
+  </table>
+  <aside class="notes">En equipos chicos una persona cubre varios roles; lo importante es que cada tarea tenga dueño.</aside>
+</section>
+
+<section class="slide">
+  <h2>Si algo sale mal</h2>
+  <div class="cols c3">
+    <div class="card warn step"><h3>1. Avisar</h3><p>"Pegué un token en el chat." Cuanto antes, menos daño. Sin castigo por reportar.</p></div>
+    <div class="card warn step"><h3>2. Contener</h3><p>Rotar la credencial, borrar la conversación, revocar accesos del agente.</p></div>
+    <div class="card warn step"><h3>3. Revisar</h3><p>Qué salió, hacia dónde, qué hizo el agente (por eso importan los registros).</p></div>
+    <div class="card warn step"><h3>4. Aprender</h3><p>Ajustar la política o los controles para que no se repita.</p></div>
+  </div>
+  <aside class="notes">Un token pegado y rotado en 5 minutos es un susto; uno escondido por miedo es un incidente. El caso de labllm2 (agente borra producción) sirve como ejercicio.</aside>
+</section>
+
+<section class="slide">
+  <h2>Checklist del equipo</h2>
+  <ul class="checklist">
+    <li>Lista de herramientas aprobadas y con cuenta corporativa.</li>
+    <li>Clasificación de datos conocida por todos.</li>
+    <li>Todo lo generado por IA pasa por revisión humana.</li>
+    <li>Configuración de agentes versionada y revisada por MR.</li>
+    <li>Canal y procedimiento para reportar incidentes.</li>
+    <li>Revisión periódica de la política (las herramientas cambian rápido).</li>
+  </ul>
+  <aside class="notes">Cierre.</aside>
+</section>
+
+<script>
+// Data classification drag & drop (tap-to-move fallback for touch/projector clickers)
+const CASES = [
+  ['Pregunta sobre cómo usar una librería open source', 'ok', 'Información pública.'],
+  ['Texto de la documentación pública del producto', 'ok', 'Ya es público.'],
+  ['Módulo de código interno, en la herramienta aprobada con cuenta corporativa', 'ok', 'Interno en herramienta aprobada: es para lo que se aprobó.'],
+  ['El mismo módulo, en un chat gratuito con cuenta personal', 'no', 'Herramienta no aprobada: no hay acuerdo sobre qué hace el proveedor con los datos.'],
+  ['Stack trace con rutas y hosts internos', 'san', 'Útil para depurar; quitá hosts, rutas y nombres antes.'],
+  ['Log de producción con emails de clientes', 'san', 'Reemplazá emails e IDs por marcadores; el error se entiende igual.'],
+  ['Config de nginx con IPs y dominios internos', 'san', 'Cambiá IPs y dominios por [HOST]; la estructura alcanza.'],
+  ['Archivo .env con claves de API', 'no', 'Credenciales: nunca. Si pasó, rotarlas.'],
+  ['Planilla de sueldos para "armar una fórmula"', 'no', 'Para la fórmula alcanzan los nombres de columna.'],
+  ['Contrato firmado con un cliente', 'no', 'Confidencial con terceros; requiere herramienta aprobada específicamente.'],
+];
+const pool = document.getElementById('pool');
+const buckets = [...document.querySelectorAll('.bucket')];
+let picked = null, checked = false;
+function reset() {
+  checked = false; picked = null;
+  document.getElementById('clsScore').textContent = '';
+  document.getElementById('clsExplain').textContent = 'Después de verificar, tocá un caso para ver por qué.';
+  buckets.forEach(b => b.querySelectorAll('.chip').forEach(c => c.remove()));
+  pool.innerHTML = '';
+  [...CASES.keys()].sort(() => Math.random() - .5).forEach(i => {
+    const c = document.createElement('div');
+    c.className = 'chip'; c.draggable = true; c.dataset.i = i; c.textContent = CASES[i][0];
+    c.ondragstart = e => e.dataTransfer.setData('text/plain', i);
+    c.onclick = e => {
+      e.stopPropagation();
+      if (checked) { const [, b, why] = CASES[i]; document.getElementById('clsExplain').innerHTML = `<b>${c.textContent}</b>: ${why}`; return; }
+      if (picked) picked.style.outline = '';
+      picked = c; c.style.outline = '2px solid var(--accent)';
+    };
+    pool.append(c);
+  });
+}
+function drop(target, chip) {
+  if (!chip) return;
+  chip.style.outline = ''; chip.classList.remove('right', 'wrong');
+  target.append(chip); picked = null;
+}
+[pool, ...buckets].forEach(t => {
+  t.ondragover = e => { e.preventDefault(); t.classList.add('over'); };
+  t.ondragleave = () => t.classList.remove('over');
+  t.ondrop = e => { e.preventDefault(); t.classList.remove('over'); drop(t, document.querySelector(`.chip[data-i="${e.dataTransfer.getData('text/plain')}"]`)); };
+  t.onclick = () => { if (picked) drop(t, picked); };
+});
+document.getElementById('clsCheck').onclick = () => {
+  checked = true;
+  let ok = 0, placed = 0;
+  buckets.forEach(b => b.querySelectorAll('.chip').forEach(c => {
+    placed++;
+    const right = CASES[c.dataset.i][1] === b.dataset.b;
+    c.classList.toggle('right', right); c.classList.toggle('wrong', !right);
+    if (right) ok++;
+  }));
+  document.getElementById('clsScore').textContent = `${ok} de ${CASES.length} correctos${placed < CASES.length ? ` (${CASES.length - placed} sin ubicar)` : ''}`;
+};
+document.getElementById('clsReset').onclick = reset;
+reset();
+</script>
+<script src="deck.js"></script>
+</body>
+</html>

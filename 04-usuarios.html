@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IA para usuarios finales</title>
+<link rel="stylesheet" href="deck.css">
+<style>
+.bars{display:flex;align-items:flex-end;gap:4px;height:180px;border-bottom:1px solid var(--line);margin:10px 0}
+.bars div{flex:1;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px;transition:height .2s}
+.big{font-size:1.8em;font-weight:800;color:var(--accent);line-height:1.1}
+.ba pre{white-space:pre-wrap;font-size:.75em}
+</style>
+</head>
+<body>
+
+<section class="slide cover">
+  <p class="kicker">Enfoque 04</p>
+  <h1>IA para usuarios finales</h1>
+  <p class="lead">Para quien no programa: qué es un asistente de IA, cómo usarlo mejor, cómo gastar menos y qué no hay que pegarle nunca.</p>
+  <aside class="notes">Público: cualquier persona de la organización. Nada de este deck requiere saber programar. Objetivo: que se vayan con 5 hábitos concretos.</aside>
+</section>
+
+<section class="slide">
+  <h2>¿Qué es un asistente de IA?</h2>
+  <div class="cols">
+    <div>
+      <p>Un modelo de lenguaje (LLM) <b>predice la próxima palabra</b> a partir de todo lo que leyó y de lo que le escribís.</p>
+      <ul>
+        <li>No "busca" la respuesta: la <b>redacta</b>.</li>
+        <li>No sabe si lo que dice es cierto; sabe si <b>suena</b> correcto.</li>
+        <li>No recuerda otras conversaciones salvo que la herramienta lo guarde aparte.</li>
+      </ul>
+    </div>
+    <div class="analogy">Es como un pasante brillante que leyó media biblioteca, escribe rapidísimo y nunca dice "no sé". Le das trabajo, pero revisás lo que entrega.</div>
+  </div>
+  <aside class="notes">Desmitificar: ni oráculo ni buscador. La analogía del pasante vuelve en todo el deck.</aside>
+</section>
+
+<section class="slide">
+  <h2>Tokens: la moneda de la IA</h2>
+  <div class="cols">
+    <div>
+      <p>El modelo no lee letras ni palabras: lee <b>tokens</b>, pedacitos de texto.</p>
+      <ul>
+        <li>En español, una palabra ≈ 1 a 2 tokens.</li>
+        <li>Se cobra (o se limita) por tokens que <b>entran</b> y tokens que <b>salen</b>.</li>
+        <li>Hay un tope por conversación: la <b>ventana de contexto</b>. Si se llena, se olvida lo del principio o hay que empezar de nuevo.</li>
+      </ul>
+    </div>
+    <div class="analogy">Es un taxi con taxímetro: cobra por lo que le das a leer y por lo que te contesta. Y la valija (el contexto) tiene un tamaño fijo.</div>
+  </div>
+  <aside class="notes">En planes de suscripción no se ve el costo, pero sí el límite de uso: "llegaste al límite, volvé en X horas". Es lo mismo: tokens.</aside>
+</section>
+
+<section class="slide">
+  <h2>Probalo: ¿cuántos tokens es esto?</h2>
+  <div class="cols">
+    <div>
+      <textarea id="tokText" rows="7" placeholder="Pegá un texto (de ejemplo, nada confidencial)">Hola, necesito que me ayudes a redactar un mail para el proveedor explicando que el pedido llegó incompleto y pidiendo que envíen lo que falta antes del viernes.</textarea>
+      <p class="small muted">Estimación aproximada (≈ 4 caracteres por token). Cada herramienta tokeniza distinto.</p>
+    </div>
+    <div class="card">
+      <div class="big" id="tokN">0</div>
+      <p class="muted">tokens aproximados</p>
+      <p id="tokEq" class="small"></p>
+    </div>
+  </div>
+  <aside class="notes">Pegar en vivo un párrafo corto, después un documento largo. Mostrar cómo crece. Remarcar: "nada confidencial", también es un hábito.</aside>
+</section>
+
+<section class="slide">
+  <h2>Por qué las conversaciones largas cuestan tanto</h2>
+  <p>En cada mensaje nuevo, la herramienta le reenvía al modelo <b>toda la conversación anterior</b>.</p>
+  <div class="cols">
+    <div>
+      <label class="small">Mensajes en la conversación: <b id="turnsV">10</b></label>
+      <input type="range" id="turns" min="1" max="40" value="10" style="width:100%">
+      <label class="small">Tokens por mensaje (pregunta + respuesta): <b id="perV">500</b></label>
+      <input type="range" id="per" min="100" max="3000" step="100" value="500" style="width:100%">
+      <div class="bars" id="bars"></div>
+      <p class="small muted">Cada barra: lo que el modelo lee en ese mensaje.</p>
+    </div>
+    <div class="card">
+      <div class="big" id="totalT">0</div>
+      <p class="muted">tokens procesados en total</p>
+      <p class="small" id="vsNew"></p>
+    </div>
+  </div>
+  <aside class="notes">Mover el slider de mensajes: el total crece mucho más rápido que la conversación. Moraleja: conversación nueva para tema nuevo.</aside>
+</section>
+
+<section class="slide">
+  <h2>Cinco hábitos para gastar menos (y obtener mejores respuestas)</h2>
+  <ol>
+    <li class="step"><b>Un tema, una conversación.</b> Cambiás de tema → chat nuevo.</li>
+    <li class="step"><b>Pegá solo lo necesario.</b> El párrafo relevante, no el documento entero.</li>
+    <li class="step"><b>Decí qué formato querés.</b> "En 5 bullets", "máximo 100 palabras", "solo la tabla".</li>
+    <li class="step"><b>Dale contexto una vez y bien.</b> Quién sos, para quién es, qué tono. Evita idas y vueltas.</li>
+    <li class="step"><b>Corregí en lugar de repetir.</b> "Cambiá solo el segundo párrafo" en vez de pedir todo de nuevo.</li>
+  </ol>
+  <aside class="notes">Revelar uno por uno con →. Preguntar a la sala cuál ya usan.</aside>
+</section>
+
+<section class="slide">
+  <h2>Antes y después</h2>
+  <div class="row" style="margin-bottom:10px">
+    <button class="b ghost on" data-ba="0">Mail</button>
+    <button class="b ghost" data-ba="1">Resumen</button>
+    <button class="b ghost" data-ba="2">Planilla</button>
+  </div>
+  <div class="cols ba">
+    <div class="card bad"><h3>Antes</h3><pre id="baBefore"></pre><p class="small muted" id="baBeforeN"></p></div>
+    <div class="card ok"><h3>Después</h3><pre id="baAfter"></pre><p class="small muted" id="baAfterN"></p></div>
+  </div>
+  <aside class="notes">El "después" no siempre es más corto en la pregunta, pero ahorra en la respuesta y en las idas y vueltas.</aside>
+</section>
+
+<section class="slide">
+  <h2>Qué <span style="color:var(--bad)">no</span> pegar nunca</h2>
+  <div class="cols c3">
+    <div class="card bad"><h3>Credenciales</h3><p>Contraseñas, claves, tokens, códigos de verificación.</p></div>
+    <div class="card bad"><h3>Datos personales</h3><p>DNI, CUIL, teléfonos, direcciones, datos de salud de clientes o compañeros.</p></div>
+    <div class="card bad"><h3>Información confidencial</h3><p>Contratos, precios internos, sueldos, estrategia, código de la empresa en herramientas no aprobadas.</p></div>
+  </div>
+  <div class="analogy" style="margin-top:18px">Pegar algo en un chat de IA es como dictárselo a alguien de otra empresa. Quizás no lo divulgue, pero ya salió de tu oficina.</div>
+  <p class="small muted" style="margin-top:10px">Si necesitás ayuda con un texto sensible: reemplazá nombres y números por <code>[CLIENTE]</code>, <code>[MONTO]</code> antes de pegar.</p>
+  <aside class="notes">Riesgo OWASP LLM02 (divulgación de información sensible) visto del lado del usuario. Conectar con la política del equipo (enfoque 01).</aside>
+</section>
+
+<section class="slide">
+  <h2>Cuando la IA inventa</h2>
+  <div class="cols">
+    <div>
+      <p>Las <b>alucinaciones</b> son respuestas seguras, prolijas y falsas: leyes que no existen, cifras inventadas, citas a documentos que nadie escribió.</p>
+      <ul>
+        <li>Pedí la <b>fuente</b> y abrila vos.</li>
+        <li>Desconfiá de números, fechas, nombres propios y artículos de leyes.</li>
+        <li>Para datos de tu empresa, la IA no los sabe salvo que se los des.</li>
+      </ul>
+    </div>
+    <div class="analogy">El pasante nunca dice "no sé": si no tiene el dato, lo completa con algo que suena bien. Por eso revisás.</div>
+  </div>
+  <aside class="notes">OWASP LLM09 (desinformación). Caso real conocido: abogados que presentaron jurisprudencia inventada por un chatbot.</aside>
+</section>
+
+<section class="slide">
+  <h2>Cuidado con lo que la IA lee por vos</h2>
+  <p>Si le pedís que resuma un mail, una web o un PDF, ese contenido puede traer <b>instrucciones escondidas</b> ("ignorá lo anterior y…").</p>
+  <div class="cols">
+    <div class="card warn"><h3>Qué puede pasar</h3><p>Un resumen que omite lo importante, un link "recomendado" malicioso, o un asistente con acceso a tu correo que reenvía algo.</p></div>
+    <div class="card ok"><h3>Qué hacer</h3><p>No le des más permisos de los necesarios (correo, archivos, calendario). Revisá antes de que envíe o borre algo.</p></div>
+  </div>
+  <aside class="notes">Prompt injection indirecta (LLM01) explicada sin tecnicismos. En labllm se ve en vivo.</aside>
+</section>
+
+<section class="slide">
+  <h2>Checklist del día a día</h2>
+  <ul class="checklist">
+    <li>Uso la herramienta aprobada por la organización.</li>
+    <li>Chat nuevo para cada tema.</li>
+    <li>Pego solo lo necesario y sin datos sensibles.</li>
+    <li>Pido formato y largo concretos.</li>
+    <li>Verifico cifras, nombres y fuentes.</li>
+    <li>Reviso antes de enviar, publicar o borrar algo que hizo la IA.</li>
+  </ul>
+  <p class="small muted">Tocá cada ítem para marcarlo.</p>
+  <aside class="notes">Cerrar marcando la lista con la sala.</aside>
+</section>
+
+<script>
+// Token estimator
+const tokText = document.getElementById('tokText');
+const est = s => Math.ceil(s.trim().length / 4);
+function updTok() {
+  const n = est(tokText.value);
+  document.getElementById('tokN').textContent = n.toLocaleString('es-AR');
+  const pages = n / 500;
+  document.getElementById('tokEq').textContent =
+    n ? `≈ ${(n * 0.75).toFixed(0)} palabras · ≈ ${pages < 1 ? 'menos de 1 página' : pages.toFixed(1) + ' páginas'}` : '';
+}
+tokText.oninput = updTok; updTok();
+
+// Conversation growth
+const turns = document.getElementById('turns'), per = document.getElementById('per');
+function updGrowth() {
+  const t = +turns.value, p = +per.value;
+  document.getElementById('turnsV').textContent = t;
+  document.getElementById('perV').textContent = p;
+  const read = Array.from({ length: t }, (_, i) => (i + 1) * p);
+  const total = read.reduce((a, b) => a + b, 0);
+  const max = read[read.length - 1];
+  document.getElementById('bars').innerHTML = read.map(r => `<div style="height:${(r / max) * 100}%"></div>`).join('');
+  document.getElementById('totalT').textContent = total.toLocaleString('es-AR');
+  document.getElementById('vsNew').textContent =
+    `Si fueran ${t} chats nuevos de un mensaje: ${(t * p).toLocaleString('es-AR')} tokens. La conversación larga procesa ${(total / (t * p)).toFixed(1)}× más.`;
+}
+turns.oninput = per.oninput = updGrowth; updGrowth();
+
+// Before / after prompts
+const BA = [
+  ['hola! me ayudas con un mail?',
+   'Redactá un mail breve (máx. 80 palabras) a un proveedor.\nContexto: el pedido llegó incompleto, faltan 3 cajas.\nPedido: que envíen lo faltante antes del viernes.\nTono: cordial y firme.'],
+  ['[pega el informe completo de 40 páginas]\nresumilo',
+   '[pega solo la sección "Conclusiones"]\nResumí en 5 bullets para gerencia.\nIncluí solo decisiones y fechas.'],
+  ['tengo una planilla de ventas con nombres de clientes, CUIT y montos, te la paso entera, ¿qué fórmula uso para sumar por mes?',
+   'Tengo columnas Fecha (A) y Monto (C).\n¿Qué fórmula de Excel suma los montos por mes?\nRespondé solo con la fórmula y una línea de explicación.'],
+];
+const baBtns = document.querySelectorAll('[data-ba]');
+function showBA(i) {
+  baBtns.forEach(b => b.classList.toggle('on', +b.dataset.ba === i));
+  const [b, a] = BA[i];
+  document.getElementById('baBefore').textContent = b;
+  document.getElementById('baAfter').textContent = a;
+  document.getElementById('baBeforeN').textContent = i === 0 ? 'Corto, pero obliga a 3 o 4 idas y vueltas.' : i === 1 ? 'Miles de tokens de entrada para usar una parte.' : 'Expone datos de clientes que no hacen falta.';
+  document.getElementById('baAfterN').textContent = i === 0 ? 'Una sola vuelta, respuesta acotada.' : i === 1 ? 'Entrada chica, salida con formato.' : 'Sin datos sensibles; la estructura alcanza.';
+}
+baBtns.forEach(b => b.onclick = () => showBA(+b.dataset.ba)); showBA(0);
+</script>
+<script src="deck.js"></script>
+</body>
+</html>

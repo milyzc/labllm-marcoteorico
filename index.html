@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marco teórico · IA</title>
+<link rel="stylesheet" href="deck.css">
+<style>
+body{overflow:auto}
+main{max-width:1180px;margin:0 auto;padding:6vh max(16px,5vw) 60px}
+h1{font-size:2.4em;line-height:1.1;margin:.2em 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px;margin-top:28px}
+a.card{display:block;text-decoration:none;color:var(--text);transition:transform .15s,border-color .15s}
+a.card:hover{transform:translateY(-3px);border-color:var(--accent)}
+a.card .n{font-size:2em;font-weight:800;color:var(--accent);line-height:1}
+a.card h2{font-size:1.15em;margin:.3em 0}
+a.card p{color:var(--muted);font-size:.85em;margin:0}
+.layers{margin-top:34px}
+</style>
+</head>
+<body>
+<main>
+  <p class="kicker">Marco teórico · Uso seguro de IA</p>
+  <h1>Cinco formas de trabajar con IA</h1>
+  <p class="lead">La misma tecnología aparece en lugares distintos: en el equipo, dentro del software, en la terminal del dev, en el día a día de cualquier persona y en el pipeline. Cada uno tiene sus riesgos y sus buenas prácticas.</p>
+
+  <div class="grid">
+    <a class="card acc" href="01-team.html"><div class="n">01</div><h2>IA en un equipo</h2><p>Política de uso, qué datos se comparten, shadow AI, revisión humana y contexto compartido.</p></a>
+    <a class="card acc" href="02-componentes.html"><div class="n">02</div><h2>IA entre componentes</h2><p>El LLM como pieza del sistema: system prompt, herramientas, agentes y RAG. Riesgos OWASP y los labs.</p></a>
+    <a class="card acc" href="03-dev.html"><div class="n">03</div><h2>IA para un dev</h2><p>Claude Code: jerarquía de CLAUDE.md y settings, rules, skills, commands, hooks y permisos.</p></a>
+    <a class="card acc" href="04-usuarios.html"><div class="n">04</div><h2>IA para usuarios finales</h2><p>Para quien no programa: cómo funciona, cómo ahorrar tokens, qué no pegar y cómo verificar.</p></a>
+    <a class="card acc" href="05-cicd.html"><div class="n">05</div><h2>IA en CI/CD</h2><p>Un agente que revisa merge requests en GitLab: permisos, secretos, inyección y costos.</p></a>
+  </div>
+
+  <div class="card layers">
+    <h3>Cómo se usan</h3>
+    <p class="small">Cada enfoque es independiente y se puede dar por separado. Navegación con <kbd>←</kbd> <kbd>→</kbd>, notas del presentador con <kbd>N</kbd>, tema con <kbd>T</kbd>, ayuda con <kbd>?</kbd>. Las prácticas están en <code>labllm</code> (LLM01, 02, 05, 09) y <code>labllm2</code> (LLM06, 07, 10).</p>
+  </div>
+</main>
+</body>
+</html>

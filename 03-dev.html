@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IA para un dev</title>
+<link rel="stylesheet" href="deck.css">
+<style>
+.stack{display:flex;flex-direction:column;gap:6px}
+.layer{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:7px 12px;font:inherit;font-size:.75em;color:var(--muted);text-align:left;cursor:pointer;transition:all .15s}
+.layer code{background:none;padding:0;font-size:.95em}
+.layer.lit{color:var(--text);border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--panel))}
+.layer.sel{outline:2px solid var(--accent);outline-offset:1px}
+.layer .when{font-size:.85em;white-space:nowrap}
+.verdict{font-size:1.4em;font-weight:800}
+.verdict.deny{color:var(--bad)}.verdict.ask{color:var(--warn)}.verdict.allow{color:var(--ok)}.verdict.none{color:var(--muted)}
+.scope{font-size:.72em}
+.scope{padding:8px 12px}
+.scope pre{font-size:.9em;margin-top:4px;padding:6px 10px;white-space:pre-wrap}
+.scope label{display:flex;gap:6px;align-items:center;font-weight:600}
+.scope.match{outline:2px solid var(--accent)}
+.prec{display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-size:.75em}
+.prec span.p{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:3px 9px}
+.tabsx{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:18px}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<section class="slide cover">
+  <p class="kicker">Enfoque 03</p>
+  <h1>IA para un dev</h1>
+  <p class="lead">Un agente en la terminal que lee el repo, edita archivos y corre comandos. Cómo se configura con Claude Code y cómo se mantiene bajo control.</p>
+  <aside class="notes">Ejemplos con Claude Code; la mayoría de las ideas aplican a otros agentes de código (Copilot agent, Cursor, Codex). Datos verificados contra code.claude.com/docs.</aside>
+</section>
+
+<section class="slide">
+  <h2>Del autocompletado al agente</h2>
+  <div class="cols">
+    <div>
+      <ul>
+        <li><b>Autocompletado</b>: sugiere la próxima línea. Vos decidís.</li>
+        <li><b>Chat en el IDE</b>: responde y propone cambios. Vos copiás.</li>
+        <li><b>Agente</b> (Claude Code): planifica, lee archivos, edita, corre tests y comandos en tu máquina, con <b>tus permisos</b>.</li>
+      </ul>
+      <p>Mismo salto que en el enfoque 02: de <i>decir</i> a <i>hacer</i>.</p>
+    </div>
+    <div class="analogy">Es sumar a alguien al equipo que trabaja en tu notebook, con tu usuario. Le das un manual (CLAUDE.md), recetas (skills) y reglas de la casa que no puede saltear (permisos y hooks).</div>
+  </div>
+  <aside class="notes">La analogía organiza el resto del deck: manual, recetas y reglas de la casa.</aside>
+</section>
+
+<section class="slide">
+  <h2>Las piezas: sugerencias vs. controles</h2>
+  <table>
+    <tr><th>Pieza</th><th>Dónde</th><th>Qué hace</th><th>¿Quién lo cumple?</th></tr>
+    <tr><td><b>CLAUDE.md</b></td><td><code>./CLAUDE.md</code>, <code>~/.claude/</code></td><td>Contexto e instrucciones que se cargan en cada sesión</td><td><span class="tag warn">el modelo</span></td></tr>
+    <tr><td><b>Rules</b></td><td><code>.claude/rules/*.md</code></td><td>Instrucciones por tema, opcionalmente solo para ciertas rutas</td><td><span class="tag warn">el modelo</span></td></tr>
+    <tr><td><b>Skills</b></td><td><code>.claude/skills/&lt;n&gt;/SKILL.md</code></td><td>Recetas que el modelo carga cuando aplican, o vos con <code>/nombre</code></td><td><span class="tag warn">el modelo</span></td></tr>
+    <tr><td><b>Commands</b></td><td><code>.claude/commands/*.md</code></td><td>Prompts reutilizables con <code>/nombre</code>; hoy unificados con skills</td><td><span class="tag warn">el modelo</span></td></tr>
+    <tr><td><b>Permisos</b></td><td><code>settings.json</code></td><td>Qué herramientas y comandos se permiten, se preguntan o se niegan</td><td><span class="tag ok">la herramienta</span></td></tr>
+    <tr><td><b>Hooks</b></td><td><code>settings.json</code></td><td>Scripts que corren en eventos (antes de una herramienta, al terminar…) y pueden bloquear</td><td><span class="tag ok">la herramienta</span></td></tr>
+  </table>
+  <p class="small" style="margin-top:10px"><b>Clave de seguridad:</b> lo amarillo es una <i>sugerencia</i> que el modelo puede no seguir (o una inyección puede hacerle ignorar). Lo verde lo aplica Claude Code siempre.</p>
+  <aside class="notes">Esta distinción es la idea más importante del deck. "No borres archivos" en CLAUDE.md es un pedido; un deny en permisos o un hook es una regla.</aside>
+</section>
+
+<section class="slide">
+  <h2>Jerarquía de memoria: qué instrucciones lee Claude</h2>
+  <div class="split">
+    <div>
+      <label class="small">Claude está trabajando en…</label>
+      <select id="memFile">
+        <option value="start">(recién arranca la sesión)</option>
+        <option value="api">src/api/users.ts</option>
+        <option value="docs">docs/guia.md</option>
+      </select>
+      <div class="stack" id="memStack" style="margin-top:10px"></div>
+      <p class="small muted" style="margin-top:8px">Verde = cargado en el contexto. Tocá una capa para ver el detalle.</p>
+    </div>
+    <div class="card" id="memDetail"></div>
+  </div>
+  <aside class="notes">Mostrar primero "recién arranca": ancestros y rules sin paths. Después src/api/users.ts: se suman src/api/CLAUDE.md y la rule con paths. Remarcar: las capas se SUMAN, no se pisan. Si se contradicen, el modelo elige; por eso conviene no contradecirse. /context muestra qué se cargó.</aside>
+</section>
+
+<section class="slide">
+  <h2>Jerarquía de settings: quién gana</h2>
+  <div class="prec" style="margin-bottom:14px">
+    <span class="p">Managed (organización)</span>›
+    <span class="p">Línea de comandos</span>›
+    <span class="p"><code>.claude/settings.local.json</code></span>›
+    <span class="p"><code>.claude/settings.json</code></span>›
+    <span class="p"><code>~/.claude/settings.json</code></span>
+  </div>
+  <div class="cols">
+    <div class="card"><h3>Valores simples</h3><p>Para un valor (modelo, tema…) gana el scope más alto de la lista.</p></div>
+    <div class="card"><h3>Listas de permisos</h3><p>Se <b>combinan</b> todas. Después se evalúa: <b>deny → ask → allow</b>. Un <code>deny</code> en cualquier scope bloquea aunque otro permita.</p></div>
+    <div class="card"><h3>Managed</h3><p>Lo instala la organización (MDM, servidor). No se puede pisar desde el usuario ni el proyecto.</p></div>
+  </div>
+  <div class="analogy" style="margin-top:14px">Como las normas de un edificio: el reglamento del consorcio (managed) manda sobre las reglas de cada departamento, y si cualquiera dice "prohibido", está prohibido.</div>
+  <aside class="notes">Precedencia de valores ≠ orden de evaluación de reglas de permisos. La próxima slide lo muestra en vivo.</aside>
+</section>
+
+<section class="slide">
+  <h2>Simulador: ¿Claude puede hacer esto?</h2>
+  <div class="split">
+    <div>
+      <label class="small">Acción que intenta Claude</label>
+      <select id="permAction"></select>
+      <div class="card" style="margin-top:10px">
+        <div id="permVerdict" class="verdict"></div>
+        <p id="permWhy" class="small" style="margin:6px 0 0"></p>
+      </div>
+      <p class="small muted" style="margin-top:8px">Desactivá un archivo para ver cómo cambia la decisión.</p>
+    </div>
+    <div class="stack" id="permScopes"></div>
+  </div>
+  <aside class="notes">Casos para mostrar: git push → ask aunque local lo permite (ask se evalúa antes que allow). Read .env → deny de la organización. docker compose → sin regla, Claude pregunta (modo default). Apagar managed y ver qué pasa con .env.</aside>
+</section>
+
+<section class="slide">
+  <h2>Ejemplos mínimos</h2>
+  <div class="tabsx" id="exTabs"></div>
+  <pre id="exCode" style="max-height:52vh"></pre>
+  <p class="small muted" id="exNote" style="margin-top:8px"></p>
+  <aside class="notes">Recorrer las pestañas. El hook es el único ejemplo que BLOQUEA de verdad; el resto orienta al modelo.</aside>
+</section>
+
+<section class="slide">
+  <h2>Hooks: el momento de cada control</h2>
+  <div class="flowh row" style="gap:8px;justify-content:center;margin-bottom:14px">
+    <span class="tag">SessionStart</span>→<span class="tag">UserPromptSubmit</span>→<span class="tag bad">PreToolUse</span>→<span class="tag">herramienta</span>→<span class="tag">PostToolUse</span>→<span class="tag">Stop</span>→<span class="tag">SessionEnd</span>
+  </div>
+  <div class="cols c3">
+    <div class="card bad step"><h3>PreToolUse</h3><p>Antes de ejecutar. Puede <b>bloquear</b> (exit code 2) y explicarle a Claude por qué. Ej: impedir <code>rm -rf</code>, lecturas de <code>.env</code>, push a <code>main</code>.</p></div>
+    <div class="card acc step"><h3>PostToolUse</h3><p>Después de ejecutar. Ej: formatear o lintear el archivo editado, registrar la acción.</p></div>
+    <div class="card acc step"><h3>UserPromptSubmit / Stop</h3><p>Al recibir el pedido o al terminar. Ej: agregar contexto, detectar secretos pegados, correr tests antes de dar por terminado.</p></div>
+  </div>
+  <p class="small muted" style="margin-top:10px">El hook recibe por stdin un JSON con <code>tool_name</code> y <code>tool_input</code> (para Bash, <code>tool_input.command</code>). Hay más eventos; estos son los principales.</p>
+  <aside class="notes">Los hooks corren con tus permisos: un hook de un repo ajeno es código que ejecutás. Revisarlos como cualquier script.</aside>
+</section>
+
+<section class="slide">
+  <h2>Riesgos propios del agente de código</h2>
+  <div class="cols">
+    <div class="card bad"><h3>Secretos en el contexto</h3><p>Lee <code>.env</code>, logs o configs y los manda al proveedor. <b>Defensa:</b> deny de <code>Read(./.env)</code>, secretos fuera del repo.</p></div>
+    <div class="card bad"><h3>Permisos de más</h3><p><code>bypassPermissions</code> o allow amplios tipo <code>Bash(*)</code>. <b>Defensa:</b> allow puntuales, ask para lo irreversible, sandbox o contenedor.</p></div>
+    <div class="card bad"><h3>Inyección desde el repo</h3><p>Un README, issue, dependencia o CLAUDE.md de un repo clonado con instrucciones plantadas. <b>Defensa:</b> revisar repos ajenos, permisos estrictos, no confiar en el texto.</p></div>
+    <div class="card bad"><h3>Terceros</h3><p>Servidores MCP, plugins y skills de otros: código y texto que entra con tu sesión. <b>Defensa:</b> solo fuentes confiables, revisar antes de instalar.</p></div>
+  </div>
+  <aside class="notes">Los cuatro son LLM01/LLM02/LLM06 vistos desde la terminal del dev.</aside>
+</section>
+
+<section class="slide">
+  <h2>Qué va en cada lugar (equipo)</h2>
+  <table>
+    <tr><th>Necesidad</th><th>Lugar</th><th>¿Se versiona?</th></tr>
+    <tr><td>Convenciones del proyecto, comandos de build y test</td><td><code>./CLAUDE.md</code> + <code>.claude/rules/</code></td><td>Sí</td></tr>
+    <tr><td>Flujos repetibles (release, review, migraciones)</td><td><code>.claude/skills/</code></td><td>Sí</td></tr>
+    <tr><td>Permisos y hooks del equipo</td><td><code>.claude/settings.json</code></td><td>Sí</td></tr>
+    <tr><td>Preferencias personales en este repo</td><td><code>CLAUDE.local.md</code>, <code>settings.local.json</code></td><td>No (<code>.gitignore</code>)</td></tr>
+    <tr><td>Preferencias personales en todos los repos</td><td><code>~/.claude/</code></td><td>No</td></tr>
+    <tr><td>Políticas obligatorias de la organización</td><td>Managed settings / CLAUDE.md</td><td>Lo gestiona IT</td></tr>
+  </table>
+  <p class="small muted" style="margin-top:8px">CLAUDE.md corto (menos de ~200 líneas): todo lo que está ahí ocupa contexto en cada sesión.</p>
+  <aside class="notes">Puente con el enfoque 01 (team): la configuración compartida es parte de la política del equipo.</aside>
+</section>
+
+<section class="slide">
+  <h2>Checklist del dev</h2>
+  <ul class="checklist">
+    <li>Lo que <i>no puede pasar</i> está en permisos o hooks, no solo en CLAUDE.md.</li>
+    <li><code>deny</code> para <code>.env</code> y secretos; nada de credenciales en el repo.</li>
+    <li><code>ask</code> para push, deploy, borrados y migraciones.</li>
+    <li>Sin <code>bypassPermissions</code> fuera de un contenedor descartable.</li>
+    <li>Reviso hooks, skills y MCP de terceros antes de usarlos.</li>
+    <li>Leo el diff antes de commitear: el código del agente es mío.</li>
+    <li>CLAUDE.md corto y sin contradicciones; <code>/context</code> para ver qué se cargó.</li>
+  </ul>
+  <aside class="notes">Cierre.</aside>
+</section>
+
+<script>
+// Memory hierarchy
+const LAYERS = [
+  { id: 'managed', label: 'Managed (organización)', path: '/Library/Application Support/ClaudeCode/CLAUDE.md', when: 'al iniciar', on: () => true,
+    d: 'Política de la organización. En Linux <code>/etc/claude-code/CLAUDE.md</code>. La gestiona IT; aplica a todos los proyectos.' },
+  { id: 'user', label: 'Usuario', path: '~/.claude/CLAUDE.md', when: 'al iniciar', on: () => true,
+    d: 'Tus preferencias para todos los proyectos. No se comparte. Reglas personales en <code>~/.claude/rules/</code>.' },
+  { id: 'project', label: 'Proyecto', path: './CLAUDE.md  o  ./.claude/CLAUDE.md', when: 'al iniciar', on: () => true,
+    d: 'Del equipo, se versiona. Convenciones, comandos de build y test, arquitectura. Puede importar otros archivos con <code>@ruta/al/archivo</code>.' },
+  { id: 'local', label: 'Local del proyecto', path: './CLAUDE.local.md', when: 'al iniciar', on: () => true,
+    d: 'Personal para este repo. Agregalo vos a <code>.gitignore</code>.' },
+  { id: 'rules', label: 'Rules sin paths', path: '.claude/rules/testing.md', when: 'al iniciar', on: () => true,
+    d: 'Un tema por archivo. Sin frontmatter se cargan siempre, con la misma prioridad que el CLAUDE.md del proyecto.' },
+  { id: 'rulesPath', label: 'Rules con paths', path: '.claude/rules/api.md  (paths: src/api/**)', when: 'al tocar src/api/', on: f => f === 'api',
+    d: 'Se cargan solo cuando Claude lee o edita un archivo que coincide con <code>paths</code>. Ahorran contexto.' },
+  { id: 'subdir', label: 'Subcarpeta', path: 'src/api/CLAUDE.md', when: 'al tocar src/api/', on: f => f === 'api',
+    d: 'No se carga al iniciar: se suma la primera vez que Claude trabaja con un archivo de esa carpeta.' },
+];
+const memStack = document.getElementById('memStack'), memDetail = document.getElementById('memDetail'), memFile = document.getElementById('memFile');
+let memSel = 'project';
+function renderMem() {
+  const f = memFile.value;
+  memStack.innerHTML = LAYERS.map(l =>
+    `<button class="layer ${l.on(f) ? 'lit' : ''} ${l.id === memSel ? 'sel' : ''}" data-l="${l.id}"><span><b>${l.label}</b><br><code>${l.path}</code></span><span class="when">${l.when}</span></button>`).join('');
+  memStack.querySelectorAll('.layer').forEach(b => b.onclick = () => { memSel = b.dataset.l; renderMem(); });
+  const l = LAYERS.find(x => x.id === memSel);
+  const n = LAYERS.filter(x => x.on(f)).length;
+  memDetail.innerHTML = `<h3>${l.label}</h3><p class="small">${l.d}</p><p class="small"><span class="tag ${l.on(f) ? 'ok' : ''}">${l.on(f) ? 'cargada' : 'no cargada todavía'}</span></p><hr style="border:0;border-top:1px solid var(--line)"><p class="small muted">${n} capas en contexto. Todas se <b>suman</b>: ninguna reemplaza a otra. Si se contradicen, el modelo elige cuál seguir.</p>`;
+}
+memFile.onchange = renderMem; renderMem();
+
+// Permissions simulator
+const SCOPES = [
+  { id: 'managed', label: 'Managed (organización)', on: true, rules: { deny: ['Read(./.env)', 'Read(./.env.*)', 'Bash(rm -rf *)'] } },
+  { id: 'local', label: '.claude/settings.local.json (personal)', on: true, rules: { allow: ['Bash(git push *)'] } },
+  { id: 'project', label: '.claude/settings.json (equipo)', on: true, rules: { allow: ['Bash(npm run test *)', 'Bash(npm run lint)'], ask: ['Bash(git push *)'] } },
+  { id: 'user', label: '~/.claude/settings.json (usuario)', on: true, rules: { allow: ['Bash(git status)', 'Bash(git diff *)', 'Read(./.env)'] } },
+];
+const ACTIONS = [
+  ['Bash', 'npm run test -- --watch'],
+  ['Bash', 'git push origin main'],
+  ['Read', './.env'],
+  ['Bash', 'rm -rf node_modules'],
+  ['Bash', 'git diff HEAD~1'],
+  ['Bash', 'docker compose up -d'],
+];
+const permAction = document.getElementById('permAction'), permScopes = document.getElementById('permScopes');
+permAction.innerHTML = ACTIONS.map(([t, a], i) => `<option value="${i}">${t}(${a})</option>`).join('');
+// "cmd *" also matches the bare "cmd" (space before * is optional), mirroring Claude Code.
+function matches(rule, tool, arg) {
+  const m = rule.match(/^(\w+)\((.*)\)$/);
+  if (!m || m[1] !== tool) return false;
+  const esc = m[2].replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/ \*$/, '( .*)?').replace(/\*/g, '.*');
+  return new RegExp(`^${esc}$`).test(arg);
+}
+const LABEL = { deny: 'Denegado', ask: 'Pregunta antes', allow: 'Permitido' };
+function evalPerm() {
+  const [tool, arg] = ACTIONS[+permAction.value];
+  let hit = null;
+  for (const kind of ['deny', 'ask', 'allow']) {
+    for (const s of SCOPES) {
+      if (!s.on) continue;
+      const r = (s.rules[kind] || []).find(r => matches(r, tool, arg));
+      if (r) { hit = { kind, scope: s, rule: r }; break; }
+    }
+    if (hit) break;
+  }
+  permScopes.innerHTML = SCOPES.map(s => {
+    const body = Object.entries(s.rules).map(([k, rs]) => `"${k}": ${JSON.stringify(rs).replace(/","/g, '", "')}`).join('\n');
+    return `<div class="card scope ${hit && hit.scope === s ? 'match' : ''}"><label><input type="checkbox" data-s="${s.id}" ${s.on ? 'checked' : ''}> ${s.label}</label><pre>${body}</pre></div>`;
+  }).join('');
+  permScopes.querySelectorAll('input').forEach(c => c.onchange = () => { SCOPES.find(s => s.id === c.dataset.s).on = c.checked; evalPerm(); });
+  const v = document.getElementById('permVerdict'), why = document.getElementById('permWhy');
+  if (hit) {
+    v.className = `verdict ${hit.kind}`; v.textContent = LABEL[hit.kind];
+    why.innerHTML = `Coincide <code>${hit.rule}</code> en <b>${hit.scope.label}</b>. Orden de evaluación: deny → ask → allow.`;
+  } else {
+    v.className = 'verdict none'; v.textContent = 'Sin regla: pregunta';
+    why.textContent = 'Ninguna regla coincide. En modo por defecto, Claude Code te pide confirmación.';
+  }
+}
+permAction.onchange = evalPerm; evalPerm();
+
+// Minimal examples
+const EX = {
+  'CLAUDE.md': ['# Project\n\nNode 22 API. Tests: `npm test`. Lint: `npm run lint`.\n\n## Conventions\n- TypeScript strict, no `any`.\n- DB access only through `src/db/`.\n\n## Never\n- Commit secrets or `.env` files.\n- Run migrations against production.\n\n@docs/architecture.md',
+    'Corto y concreto. <code>@docs/architecture.md</code> importa otro archivo. Es una guía: el modelo puede no cumplirla.'],
+  'rule': ['# .claude/rules/api.md\n---\npaths:\n  - "src/api/**/*.ts"\n---\n- Every endpoint validates input with the shared schema.\n- Never log request bodies (they may contain personal data).',
+    'Se carga solo cuando Claude toca archivos de <code>src/api/</code>.'],
+  'skill': ['# .claude/skills/release-notes/SKILL.md\n---\nname: release-notes\ndescription: Draft release notes from merged MRs since the last tag\ndisable-model-invocation: true\nallowed-tools: Bash(git log *) Bash(git tag *)\n---\nList commits since the latest tag, group them by type\n(feat, fix, chore) and draft release notes for $ARGUMENTS.',
+    'Se usa con <code>/release-notes v2.3</code>. <code>disable-model-invocation</code> evita que Claude la dispare solo. Un archivo en <code>.claude/commands/release-notes.md</code> crea el mismo comando.'],
+  'permisos': ['// .claude/settings.json\n{\n  "permissions": {\n    "allow": ["Bash(npm run test *)", "Bash(npm run lint)"],\n    "ask":   ["Bash(git push *)", "Bash(npm publish *)"],\n    "deny":  ["Read(./.env)", "Read(./.env.*)", "Read(./secrets/**)"]\n  }\n}',
+    'Lo aplica Claude Code, no el modelo. Las listas de todos los scopes se combinan.'],
+  'hook': ['// .claude/settings.json\n{\n  "hooks": {\n    "PreToolUse": [{\n      "matcher": "Bash",\n      "hooks": [{\n        "type": "command",\n        "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/block-rm.sh"\n      }]\n    }]\n  }\n}\n\n# .claude/hooks/block-rm.sh\n#!/bin/bash\ncmd=$(jq -r \'.tool_input.command\')\nif [[ "$cmd" == *"rm -rf"* ]]; then\n  echo "Blocked: rm -rf is not allowed" >&2\n  exit 2   # blocks the call; stderr goes back to Claude\nfi\nexit 0',
+    'Exit 2 bloquea y le explica a Claude el motivo. Otro código distinto de 0 no bloquea.'],
+};
+const exTabs = document.getElementById('exTabs');
+exTabs.innerHTML = Object.keys(EX).map(k => `<button class="b ghost" data-ex="${k}">${k}</button>`).join('');
+function showEx(k) {
+  exTabs.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.ex === k));
+  document.getElementById('exCode').textContent = EX[k][0];
+  document.getElementById('exNote').innerHTML = EX[k][1];
+}
+exTabs.querySelectorAll('button').forEach(b => b.onclick = () => showEx(b.dataset.ex));
+showEx('CLAUDE.md');
+</script>
+<script src="deck.js"></script>
+</body>
+</html>
