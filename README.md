@@ -1,6 +1,6 @@
 # Marco teórico · uso seguro de IA
 
-Slides HTML interactivas con cinco enfoques de IA. Cada enfoque es independiente y se puede dar por separado.
+Slides HTML interactivas con seis enfoques de IA. Cada enfoque es independiente y se puede dar por separado.
 
 | Deck | Enfoque | Interactivo |
 |---|---|---|
@@ -9,6 +9,7 @@ Slides HTML interactivas con cinco enfoques de IA. Cada enfoque es independiente
 | `03-dev.html` | IA para un dev con Claude Code: jerarquía de CLAUDE.md y de settings, rules, skills, commands, hooks, permisos | Capas de memoria, simulador de permisos, ejemplos |
 | `04-usuarios.html` | IA para usuarios no técnicos: tokens, ahorrar, qué no pegar, alucinaciones | Contador de tokens, costo de conversaciones largas, antes/después |
 | `05-cicd.html` | IA en CI/CD: agente de review de MR en GitLab | Pipeline paso a paso, `.gitlab-ci.yml` anotado |
+| `06-modelo.html` | IA desde el modelo: preentrenamiento, fine-tuning, LoRA, alineación; memorización, envenenamiento, modelos de terceros | Mini-modelo de próxima palabra que se "entrena" con ejemplos (normales, envenenados, puerta trasera), ayuda para elegir prompt, RAG o fine-tuning |
 
 ## Uso
 
