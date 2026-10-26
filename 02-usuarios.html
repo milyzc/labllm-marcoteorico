@@ -15,7 +15,7 @@
 <body>
 
 <section class="slide cover">
-  <p class="kicker">Enfoque 04</p>
+  <p class="kicker">Enfoque 02</p>
   <h1>IA para usuarios finales</h1>
   <p class="lead">Para quien no programa: qué es un asistente de IA, cómo usarlo mejor, cómo gastar menos y qué no hay que pegarle nunca.</p>
   <aside class="notes">Público: cualquier persona de la organización. Nada de este deck requiere saber programar. Objetivo: que se vayan con 5 hábitos concretos.</aside>
@@ -43,7 +43,7 @@
     <div>
       <p>El modelo no lee letras ni palabras: lee <b>tokens</b>, pedacitos de texto.</p>
       <ul>
-        <li>En español, una palabra ≈ 1 a 2 tokens.</li>
+        <li>Cuánto texto entra en un token depende del modelo y del idioma (<a href="https://platform.claude.com/docs/en/about-claude/glossary#tokens" target="_blank" rel="noopener">Anthropic · Glosario</a>).</li>
         <li>Se cobra (o se limita) por tokens que <b>entran</b> y tokens que <b>salen</b>.</li>
         <li>Hay un tope por conversación: la <b>ventana de contexto</b>. Si se llena, se olvida lo del principio o hay que empezar de nuevo.</li>
       </ul>
@@ -58,7 +58,13 @@
   <div class="cols">
     <div>
       <textarea id="tokText" rows="7" placeholder="Pegá un texto (de ejemplo, nada confidencial)">Hola, necesito que me ayudes a redactar un mail para el proveedor explicando que el pedido llegó incompleto y pidiendo que envíen lo que falta antes del viernes.</textarea>
-      <p class="small muted">Estimación aproximada (≈ 4 caracteres por token). Cada herramienta tokeniza distinto.</p>
+      <p class="small muted">Estimación aproximada, con reglas prácticas para texto en inglés:</p>
+      <ul class="small muted" style="margin:4px 0">
+        <li>1 token ≈ 4 caracteres.</li>
+        <li>1 token ≈ ¾ de una palabra.</li>
+        <li>100 tokens ≈ 75 palabras.</li>
+      </ul>
+      <p class="small muted">En español suele dar más tokens, y cada modelo tokeniza distinto. Fuente: <a href="https://help.openai.com/es-419/articles/4936856-understanding-and-counting-tokens" target="_blank" rel="noopener">OpenAI · Qué son los tokens y cómo contarlos</a>. En Claude, un token ≈ 3,5 caracteres en inglés, y los modelos más nuevos usan ~30% más tokens para el mismo texto (<a href="https://platform.claude.com/docs/en/about-claude/glossary#tokens" target="_blank" rel="noopener">Anthropic · Glosario</a>).</p>
     </div>
     <div class="card">
       <div class="big" id="tokN">0</div>
@@ -93,13 +99,13 @@
 <section class="slide">
   <h2>Cinco hábitos para gastar menos (y obtener mejores respuestas)</h2>
   <ol>
-    <li class="step"><b>Un tema, una conversación.</b> Cambiás de tema → chat nuevo.</li>
-    <li class="step"><b>Pegá solo lo necesario.</b> El párrafo relevante, no el documento entero.</li>
-    <li class="step"><b>Decí qué formato querés.</b> "En 5 bullets", "máximo 100 palabras", "solo la tabla".</li>
-    <li class="step"><b>Dale contexto una vez y bien.</b> Quién sos, para quién es, qué tono. Evita idas y vueltas.</li>
-    <li class="step"><b>Corregí en lugar de repetir.</b> "Cambiá solo el segundo párrafo" en vez de pedir todo de nuevo.</li>
+    <li><b>Un tema, una conversación.</b> Cambiás de tema → chat nuevo.</li>
+    <li><b>Pegá solo lo necesario.</b> El párrafo relevante, no el documento entero.</li>
+    <li><b>Decí qué formato querés.</b> "En 5 bullets", "máximo 100 palabras", "solo la tabla".</li>
+    <li><b>Dale contexto una vez y bien.</b> Quién sos, para quién es, qué tono. Evita idas y vueltas.</li>
+    <li><b>Corregí en lugar de repetir.</b> "Cambiá solo el segundo párrafo" en vez de pedir todo de nuevo.</li>
   </ol>
-  <aside class="notes">Revelar uno por uno con →. Preguntar a la sala cuál ya usan.</aside>
+  <aside class="notes">Preguntar a la sala cuál ya usan.</aside>
 </section>
 
 <section class="slide">
@@ -141,7 +147,7 @@
     </div>
     <div class="analogy">El pasante nunca dice "no sé": si no tiene el dato, lo completa con algo que suena bien. Por eso revisás.</div>
   </div>
-  <aside class="notes">OWASP LLM09 (desinformación). Caso real conocido: abogados que presentaron jurisprudencia inventada por un chatbot.</aside>
+  <aside class="notes">OWASP LLM09 (desinformación). Caso real: Mata v. Avianca (Nueva York, 2023), abogados que presentaron jurisprudencia inventada por ChatGPT; el juez desestimó la demanda y los multó con US$ 5.000. Fuente: https://en.wikipedia.org/wiki/Mata_v._Avianca,_Inc.</aside>
 </section>
 
 <section class="slide">
@@ -154,20 +160,6 @@
   <aside class="notes">Prompt injection indirecta (LLM01) explicada sin tecnicismos. En labllm se ve en vivo.</aside>
 </section>
 
-<section class="slide">
-  <h2>Checklist del día a día</h2>
-  <ul class="checklist">
-    <li>Uso la herramienta aprobada por la organización.</li>
-    <li>Chat nuevo para cada tema.</li>
-    <li>Pego solo lo necesario y sin datos sensibles.</li>
-    <li>Pido formato y largo concretos.</li>
-    <li>Verifico cifras, nombres y fuentes.</li>
-    <li>Reviso antes de enviar, publicar o borrar algo que hizo la IA.</li>
-  </ul>
-  <p class="small muted">Tocá cada ítem para marcarlo.</p>
-  <aside class="notes">Cerrar marcando la lista con la sala.</aside>
-</section>
-
 <script>
 // Token estimator
 const tokText = document.getElementById('tokText');
@@ -175,9 +167,8 @@ const est = s => Math.ceil(s.trim().length / 4);
 function updTok() {
   const n = est(tokText.value);
   document.getElementById('tokN').textContent = n.toLocaleString('es-AR');
-  const pages = n / 500;
   document.getElementById('tokEq').textContent =
-    n ? `≈ ${(n * 0.75).toFixed(0)} palabras · ≈ ${pages < 1 ? 'menos de 1 página' : pages.toFixed(1) + ' páginas'}` : '';
+    n ? `${tokText.value.trim().length.toLocaleString('es-AR')} caracteres · ≈ ${(n * 0.75).toFixed(0)} palabras` : '';
 }
 tokText.oninput = updTok; updTok();
 

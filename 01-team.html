@@ -47,13 +47,13 @@
 <section class="slide">
   <h2>Los cinco acuerdos de un equipo</h2>
   <div class="cols c3">
-    <div class="card acc step"><h3>1. Herramientas aprobadas</h3><p>Cuáles, con qué cuenta (corporativa) y con qué condiciones de datos del proveedor.</p></div>
-    <div class="card acc step"><h3>2. Clasificación de datos</h3><p>Qué se puede compartir, qué hay que sanitizar y qué nunca.</p></div>
-    <div class="card acc step"><h3>3. Revisión humana</h3><p>Lo que produce la IA lo firma una persona: código, textos, decisiones.</p></div>
-    <div class="card acc step"><h3>4. Contexto compartido</h3><p>Configuraciones, prompts y reglas comunes en el repo, no en la cabeza de cada uno.</p></div>
-    <div class="card acc step"><h3>5. Qué hacer si algo sale mal</h3><p>A quién avisar y cómo, sin miedo a la sanción.</p></div>
+    <div class="card acc"><h3>1. Herramientas aprobadas</h3><p>Cuáles, con qué cuenta (corporativa) y con qué condiciones de datos del proveedor.</p></div>
+    <div class="card acc"><h3>2. Clasificación de datos</h3><p>Qué se puede compartir, qué hay que sanitizar y qué nunca.</p></div>
+    <div class="card acc"><h3>3. Revisión humana</h3><p>Lo que produce la IA lo firma una persona: código, textos, decisiones.</p></div>
+    <div class="card acc"><h3>4. Contexto compartido</h3><p>Configuraciones, prompts y reglas comunes en el repo, no en la cabeza de cada uno.</p></div>
+    <div class="card acc"><h3>5. Qué hacer si algo sale mal</h3><p>A quién avisar y cómo, sin miedo a la sanción.</p></div>
   </div>
-  <aside class="notes">Revelar de a uno. El resto del deck desarrolla cada acuerdo.</aside>
+  <aside class="notes">El resto del deck desarrolla cada acuerdo.</aside>
 </section>
 
 <section class="slide">
@@ -122,25 +122,12 @@
 </section>
 
 <section class="slide">
-  <h2>Roles</h2>
-  <table>
-    <tr><th>Quién</th><th>Qué hace</th></tr>
-    <tr><td><b>Liderazgo / seguridad</b></td><td>Aprueba herramientas, define la clasificación de datos, mantiene la política.</td></tr>
-    <tr><td><b>Tech lead</b></td><td>Mantiene la configuración compartida del repo y revisa sus cambios.</td></tr>
-    <tr><td><b>Cada persona</b></td><td>Usa lo aprobado, sanitiza, revisa lo que genera y reporta incidentes.</td></tr>
-    <tr><td><b>Dueños de la base de conocimiento</b></td><td>Deciden qué documentos se cargan al asistente y quién puede verlos; revisan los aportes y correcciones antes de que lo alimenten (LLM04, LLM08).</td></tr>
-    <tr><td><b>Plataforma / DevOps</b></td><td>Configura los agentes en CI/CD con permisos y secretos mínimos (<a href="05-cicd.html">enfoque 05</a>).</td></tr>
-  </table>
-  <aside class="notes">En equipos chicos una persona cubre varios roles; lo importante es que cada tarea tenga dueño.</aside>
-</section>
-
-<section class="slide">
   <h2>Si algo sale mal</h2>
   <div class="cols c3">
-    <div class="card warn step"><h3>1. Avisar</h3><p>"Pegué un token en el chat." Cuanto antes, menos daño. Sin castigo por reportar.</p></div>
-    <div class="card warn step"><h3>2. Contener</h3><p>Rotar la credencial, borrar la conversación, revocar accesos del agente.</p></div>
-    <div class="card warn step"><h3>3. Revisar</h3><p>Qué salió, hacia dónde, qué hizo el agente (por eso importan los registros).</p></div>
-    <div class="card warn step"><h3>4. Aprender</h3><p>Ajustar la política o los controles para que no se repita.</p></div>
+    <div class="card warn"><h3>1. Avisar</h3><p>"Pegué un token en el chat." Cuanto antes, menos daño. Sin castigo por reportar.</p></div>
+    <div class="card warn"><h3>2. Contener</h3><p>Rotar la credencial, borrar la conversación, revocar accesos del agente.</p></div>
+    <div class="card warn"><h3>3. Revisar</h3><p>Qué salió, hacia dónde, qué hizo el agente (por eso importan los registros).</p></div>
+    <div class="card warn"><h3>4. Aprender</h3><p>Ajustar la política o los controles para que no se repita.</p></div>
   </div>
   <aside class="notes">Un token pegado y rotado en 5 minutos es un susto; uno escondido por miedo es un incidente. El caso de labllm2 (agente borra producción) sirve como ejercicio.</aside>
 </section>

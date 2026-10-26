@@ -23,7 +23,7 @@
 <body>
 
 <section class="slide cover">
-  <p class="kicker">Enfoque 02</p>
+  <p class="kicker">Enfoque 06</p>
   <h1>IA entre componentes de software</h1>
   <p class="lead">Cuando el LLM deja de ser un chat y pasa a ser una pieza más del sistema: recibe datos, llama herramientas y su salida alimenta a otros componentes.</p>
   <aside class="notes">Este enfoque es la teoría detrás de los labs labllm y labllm2. Para público no técnico, quedarse con las analogías y la demo proyectada.</aside>
@@ -141,6 +141,55 @@
 </section>
 
 <section class="slide">
+  <h2>Guardrails en código: LLM Guard</h2>
+  <p>Una librería que revisa el texto <b>antes</b> de que llegue al modelo y <b>después</b> de que responde.</p>
+  <table>
+    <tr><th>Momento</th><th>Scanner</th><th>Riesgo</th><th>Qué hace</th></tr>
+    <tr><td>Entrada</td><td><code>TokenLimit</code></td><td><span class="tag">LLM10</span></td><td>Bloquea mensajes demasiado largos</td></tr>
+    <tr><td>Entrada</td><td><code>PromptInjection</code></td><td><span class="tag">LLM01</span></td><td>Bloquea intentos de inyección (modelo de clasificación)</td></tr>
+    <tr><td>Entrada</td><td><code>Secrets</code> · <code>Anonymize</code></td><td><span class="tag">LLM02</span></td><td>Redacta claves y cambia datos personales por marcadores</td></tr>
+    <tr><td>Salida</td><td><code>Sensitive</code> · <code>Deanonymize</code></td><td><span class="tag">LLM02</span></td><td>Redacta datos que inventó el modelo y devuelve los del propio cliente</td></tr>
+  </table>
+  <div class="cols" style="margin-top:12px">
+    <div class="card warn small"><b>Lo que midió el eval de <code>dev-repo</code></b> (6 de 12 casos como se esperaba):
+      <ul>
+        <li>Bloquea mensajes normales en español ("Quiero cambiar la dirección de entrega"): el detector de inyección es solo para inglés.</li>
+        <li>No reconoce una clave con formato desconocido: detecta por patrones.</li>
+        <li>Deja pasar un link de phishing: el scanner de URLs no carga porque su modelo ya no existe.</li>
+      </ul></div>
+    <div class="card bad small"><b>Y además, archivado.</b> El proyecto y sus modelos no se mantienen desde julio de 2026: una dependencia de seguridad sin mantenimiento es un riesgo de cadena de suministro <span class="tag bad">LLM03</span>.</div>
+  </div>
+  <p class="small muted" style="margin-top:8px">Fuentes: <a href="https://github.com/protectai/llm-guard" target="_blank" rel="noopener">LLM Guard en GitHub (aviso de archivo)</a> · <a href="https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2" target="_blank" rel="noopener">model card de PromptInjection</a> · resultados: <code>uv run python -m shopar_support.eval</code> en <code>dev-repo</code>.</p>
+  <aside class="notes">Un guardrail va en la columna "ayudan, pero se esquivan" de la slide anterior: es una capa más, no la defensa. Mensaje clave: medilo con tus casos y en tu idioma antes de confiar en él. En dev-repo se corre el eval en vivo con /attack-eval.</aside>
+</section>
+
+<section class="slide">
+  <h2>¿Y ahora qué se usa?</h2>
+  <p>No hay un reemplazo directo de LLM Guard. Lo que se hace ahora es <b>combinar piezas</b>, porque LLM Guard era un envoltorio de varias cosas: su anonimizador, por ejemplo, usa Presidio por dentro.</p>
+  <div class="cols c3">
+    <div class="card ok small"><b>Llama Prompt Guard 2</b> <span class="tag">LLM01</span>
+      <p>Clasificador de Meta que detecta inyección y jailbreak. <b>Multilingüe, español incluido</b>: apunta justo a los falsos positivos que vimos.</p>
+      <p class="muted">Licencia Llama 4 Community. Descarga con registro previo en Hugging Face (formulario de Meta).</p></div>
+    <div class="card ok small"><b>Microsoft Presidio</b> <span class="tag">LLM02</span>
+      <p>Detecta y anonimiza datos personales. Admite recognizers propios: ahí entran DNI y CBU.</p>
+      <p class="muted">Licencia MIT.</p></div>
+    <div class="card acc small"><b>Amazon Bedrock Guardrails</b> <span class="tag">LLM01</span><span class="tag">LLM02</span><span class="tag">LLM09</span>
+      <p>Servicio gestionado donde <b>creás tu propio guardrail</b> combinando políticas:</p>
+      <ul>
+        <li>filtros de contenido y de <b>ataques de prompt</b>;</li>
+        <li><b>temas prohibidos</b> definidos en lenguaje natural;</li>
+        <li>palabras bloqueadas (por ejemplo, la competencia);</li>
+        <li>datos sensibles: PII y regex propias, bloquear o enmascarar;</li>
+        <li>chequeo de <b>grounding</b> contra los documentos (RAG).</li>
+      </ul>
+      <p class="muted">Con la API <code>ApplyGuardrail</code> se usa también con modelos fuera de Bedrock. El filtro de ataques de prompt requiere el tier Standard.</p></div>
+  </div>
+  <p class="small" style="margin-top:10px">Y siempre, controles propios deterministas: límite de tokens, lista de dominios permitidos para los links, autorización en el código.</p>
+  <p class="small muted">Fuentes: <a href="https://huggingface.co/meta-llama/Llama-Prompt-Guard-2-86M" target="_blank" rel="noopener">Prompt Guard 2 (model card)</a> · <a href="https://github.com/microsoft/presidio" target="_blank" rel="noopener">Presidio</a> · <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html" target="_blank" rel="noopener">Bedrock Guardrails: crear un guardrail</a> · <a href="https://aws.amazon.com/blogs/machine-learning/use-the-applyguardrail-api-with-long-context-inputs-and-streaming-outputs-in-amazon-bedrock/" target="_blank" rel="noopener">ApplyGuardrail con otros modelos</a></p>
+  <aside class="notes">Presentarlo como mejoras posibles, no como lo que usa dev-repo (que sigue con LLM Guard para mostrar sus límites). Ojo con Bedrock: el contenido bloqueado aparece en texto plano en los logs de invocación si están activados. Ninguna de estas piezas es infalible: siguen en la columna "ayudan, pero se esquivan".</aside>
+</section>
+
+<section class="slide">
   <h2>Dónde se practica</h2>
   <table>
     <tr><th>Lab</th><th>Riesgo</th><th>Escenario</th><th>Defensa que funciona</th></tr>
@@ -154,8 +203,9 @@
     <tr><td><code>labllm2</code></td><td><span class="tag">LLM07</span></td><td>Sacar el system prompt / "soy VIP"</td><td>Secretos y autorización fuera del prompt</td></tr>
     <tr><td><code>labllm2</code></td><td><span class="tag">LLM08</span></td><td>RAG trae documentos de RR.HH. o uno plantado</td><td>Filtro por permisos al recuperar</td></tr>
     <tr><td><code>labllm2</code></td><td><span class="tag">LLM10</span></td><td>Salida gigante, loops, ráfagas</td><td>Límites y presupuesto</td></tr>
+    <tr><td><code>dev-repo</code></td><td><span class="tag">LLM01</span><span class="tag">LLM02</span><span class="tag">LLM05</span></td><td>API real con LLM Guard: corpus de ataques y falsos positivos</td><td>Guardrails como capa extra, medidos con un eval</td></tr>
   </table>
-  <aside class="notes">labllm corre en :3000 y labllm2 en :3001. El modo simulado es determinista para dar clase.</aside>
+  <aside class="notes">labllm corre en :3000 y labllm2 en :3001. El modo simulado es determinista para dar clase. dev-repo es Python (uv run shopar-support, puerto 8000); la primera vez descarga varios GB de modelos.</aside>
 </section>
 
 <section class="slide">

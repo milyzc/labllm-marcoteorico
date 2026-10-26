@@ -31,7 +31,7 @@
 <body>
 
 <section class="slide cover">
-  <p class="kicker">Enfoque 06</p>
+  <p class="kicker">Enfoque 05</p>
   <h1>IA desde el modelo</h1>
   <p class="lead">Los otros enfoques miran cómo se <i>usa</i> la IA. Este mira cómo se <i>construye</i>: entrenamiento, fine-tuning y los riesgos que nacen en los datos.</p>
   <aside class="notes">Nivel conceptual: no hace falta saber matemática. La idea fuerza es "el modelo es sus datos".</aside>
@@ -40,13 +40,13 @@
 <section class="slide">
   <h2>Cómo se hace un LLM</h2>
   <div class="stages">
-    <div class="card acc step"><h3>1. Preentrenamiento</h3><p>Lee una porción enorme de internet, libros y código, y aprende a predecir la próxima palabra. Meses de cómputo; lo hacen pocas empresas.</p></div>
-    <div class="card acc step"><h3>2. Fine-tuning</h3><p>Se sigue entrenando con ejemplos de una tarea: responder preguntas, seguir instrucciones, escribir con un estilo.</p></div>
-    <div class="card acc step"><h3>3. Alineación</h3><p>Personas comparan respuestas y el modelo aprende cuáles prefieren (RLHF, DPO). Acá se aprenden los límites: qué no responder.</p></div>
-    <div class="card acc step"><h3>4. Publicación</h3><p>Se evalúa, se versiona y se publica por API o como pesos descargables.</p></div>
+    <div class="card acc"><h3>1. Preentrenamiento</h3><p>Lee una porción enorme de internet, libros y código, y aprende a predecir la próxima palabra. Meses de cómputo; lo hacen pocas empresas.</p></div>
+    <div class="card acc"><h3>2. Fine-tuning</h3><p>Se sigue entrenando con ejemplos de una tarea: responder preguntas, seguir instrucciones, escribir con un estilo.</p></div>
+    <div class="card acc"><h3>3. Alineación</h3><p>Personas comparan respuestas y el modelo aprende cuáles prefieren (RLHF, DPO). Acá se aprenden los límites: qué no responder.</p></div>
+    <div class="card acc"><h3>4. Publicación</h3><p>Se evalúa, se versiona y se publica por API o como pesos descargables.</p></div>
   </div>
   <div class="analogy">La escuela (preentrenamiento), la especialización (fine-tuning) y la inducción en la empresa sobre qué se hace y qué no (alineación).</div>
-  <aside class="notes">Revelar etapa por etapa. Las organizaciones casi siempre entran en la etapa 2, sobre un modelo ya preentrenado y alineado por otro.</aside>
+  <aside class="notes">Las organizaciones casi siempre entran en la etapa 2, sobre un modelo ya preentrenado y alineado por otro.</aside>
 </section>
 
 <section class="slide">
@@ -65,7 +65,8 @@
       <li>"Enseñarle" información sensible: puede repetirla.</li>
     </ul></div>
   </div>
-  <p class="small muted" style="margin-top:10px">Para conocimiento que cambia o tiene dueño, lo habitual es RAG (enfoque 02): el modelo busca y lee en el momento.</p>
+  <p class="small muted" style="margin-top:10px">Para conocimiento que cambia o tiene dueño, lo habitual es RAG (enfoque 06): el modelo busca y lee en el momento.</p>
+  <p class="small muted">Fuentes: <a href="https://developers.openai.com/api/docs/guides/optimizing-llm-accuracy" target="_blank" rel="noopener">OpenAI · Optimizing LLM Accuracy</a> (contexto → RAG, comportamiento → fine-tuning), <a href="https://developers.openai.com/api/docs/guides/model-optimization" target="_blank" rel="noopener">OpenAI · Model optimization</a> (casos de uso), <a href="https://arxiv.org/abs/2312.05934" target="_blank" rel="noopener">Ovadia et al., 2023 · Fine-Tuning or Retrieval?</a> (RAG supera al fine-tuning para agregar conocimiento).</p>
   <aside class="notes">Error frecuente: querer hacer fine-tuning "para que sepa nuestros datos". Casi siempre lo que se necesita es RAG.</aside>
 </section>
 
@@ -107,16 +108,17 @@
       <p id="advice" class="small" style="margin-top:10px"></p>
     </div>
   </div>
+  <p class="small muted" style="margin-top:10px">Los puntajes son una guía didáctica, no una métrica. El criterio sale de <a href="https://developers.openai.com/api/docs/guides/optimizing-llm-accuracy" target="_blank" rel="noopener">OpenAI · Optimizing LLM Accuracy</a> (empezar por el prompt; si falta contexto, RAG; si falla el comportamiento, fine-tuning). Cantidad de ejemplos: <a href="https://developers.openai.com/api/docs/guides/supervised-fine-tuning" target="_blank" rel="noopener">OpenAI · Supervised fine-tuning</a> (mínimo 10, mejoras con 50 a 100).</p>
   <aside class="notes">Hacerlo con un caso real de la sala. Regla práctica: empezar por el prompt, sumar RAG si hace falta conocimiento, y fine-tuning solo si con eso no alcanza y hay buenos datos.</aside>
 </section>
 
 <section class="slide">
   <h2>Riesgos que nacen en el modelo</h2>
   <div class="cols">
-    <div class="card bad"><h3>Memorización <span class="tag bad">LLM02</span></h3><p>El modelo puede repetir textual algo que vio al entrenar: datos personales, claves, código interno. Lo que entra al entrenamiento puede salir en una respuesta.</p></div>
+    <div class="card bad"><h3>Memorización <span class="tag bad">LLM02</span></h3><p>El modelo puede repetir textual algo que vio al entrenar: datos personales, claves, código interno. Lo que entra al entrenamiento puede salir en una respuesta.</p><p class="small muted">Fuente: <a href="https://arxiv.org/abs/2012.07805" target="_blank" rel="noopener">Carlini et al., 2020 · Extracting Training Data from LLMs</a></p></div>
     <div class="card bad"><h3>Envenenamiento <span class="tag bad">LLM04</span></h3><p>Ejemplos manipulados cambian respuestas o esconden una puerta trasera que solo se activa con una frase y pasa las pruebas.</p></div>
-    <div class="card bad"><h3>Modelos de terceros <span class="tag bad">LLM03</span></h3><p>Modelos y adaptadores descargados de un hub. Los archivos en formato <i>pickle</i> (<code>.bin</code>, <code>.pt</code>, <code>.pkl</code>) pueden ejecutar código al cargarse.</p></div>
-    <div class="card bad"><h3>Se pierden los límites</h3><p>Hay estudios que muestran que un fine-tuning, incluso con datos inofensivos, puede debilitar lo que el modelo aprendió en la alineación sobre qué no responder.</p></div>
+    <div class="card bad"><h3>Modelos de terceros <span class="tag bad">LLM03</span></h3><p>Modelos y adaptadores descargados de un hub. Los archivos en formato <i>pickle</i> (<code>.bin</code>, <code>.pt</code>, <code>.pkl</code>) pueden ejecutar código al cargarse.</p><p class="small muted">Fuentes: <a href="https://docs.python.org/3/library/pickle.html" target="_blank" rel="noopener">Python · pickle</a> · <a href="https://huggingface.co/docs/hub/security-pickle" target="_blank" rel="noopener">Hugging Face · Pickle scanning</a></p></div>
+    <div class="card bad"><h3>Se pierden los límites</h3><p>Un fine-tuning, incluso con datos inofensivos, puede debilitar lo que el modelo aprendió en la alineación sobre qué no responder (menos que con datos maliciosos, pero pasa).</p><p class="small muted">Fuente: <a href="https://arxiv.org/abs/2310.03693" target="_blank" rel="noopener">Qi et al., 2023 · Fine-tuning Aligned Language Models Compromises Safety</a></p></div>
   </div>
   <aside class="notes">El último punto sorprende: no alcanza con que los datos sean "buenos"; hay que volver a evaluar la seguridad después de cada fine-tuning.</aside>
 </section>
@@ -124,17 +126,17 @@
 <section class="slide">
   <h2>Buenas prácticas</h2>
   <div class="cols">
-    <div class="card ok step"><h3>Datos</h3><ul>
+    <div class="card ok"><h3>Datos</h3><ul>
       <li>Procedencia conocida y registrada.</li>
       <li>Sin datos personales ni secretos: anonimizar antes.</li>
       <li>Revisión humana de los ejemplos, sobre todo los aportados por usuarios.</li>
     </ul></div>
-    <div class="card ok step"><h3>Modelo</h3><ul>
+    <div class="card ok"><h3>Modelo</h3><ul>
       <li>Modelos base y adaptadores de fuentes confiables, con hash verificado.</li>
       <li>Formato <code>safetensors</code> en lugar de pickle.</li>
       <li>Modelo y dataset versionados juntos: saber qué datos produjeron qué versión.</li>
     </ul></div>
-    <div class="card ok step"><h3>Evaluación</h3><ul>
+    <div class="card ok"><h3>Evaluación</h3><ul>
       <li>Pruebas de calidad <b>y</b> de seguridad antes y después de cada entrenamiento.</li>
       <li>Probar con frases raras, no solo con las preguntas de siempre.</li>
       <li>Monitorear respuestas en producción.</li>
@@ -231,7 +233,7 @@ const QS = [
   ['¿La información cambia seguido (precios, stock, normas)?', { yes: { rag: 2, ft: -1 } }],
   ['¿Hay que citar la fuente o respetar permisos por usuario?', { yes: { rag: 2, ft: -1 } }],
   ['¿El problema es de estilo, formato o una tarea muy repetida?', { yes: { ft: 2 } }],
-  ['¿Tenés cientos de ejemplos buenos y revisados?', { yes: { ft: 1 }, no: { ft: -2 } }],
+  ['¿Tenés al menos 50 ejemplos buenos y revisados?', { yes: { ft: 1 }, no: { ft: -2 } }],
   ['¿Con instrucciones claras y algunos ejemplos ya anda bastante bien?', { yes: { prompt: 3 }, no: { rag: 1, ft: 1 } }],
 ];
 const ans = new Array(QS.length).fill(null);
