@@ -147,7 +147,7 @@
     <div class="card bad"><h3>Secretos en el contexto</h3><p>Lee <code>.env</code>, logs o configs y los manda al proveedor. <b>Defensa:</b> deny de <code>Read(./.env)</code>, secretos fuera del repo.</p></div>
     <div class="card bad"><h3>Permisos de más</h3><p><code>bypassPermissions</code> o allow amplios tipo <code>Bash(*)</code>. <b>Defensa:</b> allow puntuales, ask para lo irreversible, sandbox o contenedor.</p></div>
     <div class="card bad"><h3>Inyección desde el repo</h3><p>Un README, issue, dependencia o CLAUDE.md de un repo clonado con instrucciones plantadas. <b>Defensa:</b> revisar repos ajenos, permisos estrictos, no confiar en el texto.</p></div>
-    <div class="card bad"><h3>Terceros</h3><p>Servidores MCP, plugins y skills de otros: código y texto que entra con tu sesión. <b>Defensa:</b> solo fuentes confiables, revisar antes de instalar.</p></div>
+    <div class="card bad"><h3>Terceros <span class="tag bad">LLM03</span></h3><p>Servidores MCP, plugins y skills de otros: código y texto que entra con tu sesión. <b>Defensa:</b> solo fuentes confiables, revisar antes de instalar.</p></div>
   </div>
   <aside class="notes">Los cuatro son LLM01/LLM02/LLM06 vistos desde la terminal del dev.</aside>
 </section>

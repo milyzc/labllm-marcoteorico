@@ -71,11 +71,43 @@
 </section>
 
 <section class="slide">
+  <h2>RAG y bases vectoriales</h2>
+  <div class="cols">
+    <div>
+      <p>Un RAG convierte documentos en <b>vectores</b> (embeddings) y, ante cada pregunta, trae los fragmentos más <b>parecidos</b> para que el modelo responda con ellos.</p>
+      <ul>
+        <li><span class="tag">LLM08</span> La búsqueda no sabe de permisos: si el índice mezcla áreas o clientes, trae lo confidencial.</li>
+        <li>Un documento plantado (texto oculto, palabras repetidas) puede <b>ganar el ranking</b> y decir lo que quiera.</li>
+        <li>Los embeddings no son anónimos: se puede reconstruir parte del texto original.</li>
+      </ul>
+      <p class="small"><b>Defensa:</b> filtrar por permisos <i>antes</i> de buscar, índices separados por cliente, validar y registrar el origen de lo que se indexa.</p>
+    </div>
+    <div class="analogy">Es un bibliotecario rapidísimo que te trae el libro que más se parece a tu pregunta, sin fijarse si estaba en la sala restringida, ni quién lo dejó en el estante.</div>
+  </div>
+  <aside class="notes">Demo: labllm2, pestaña LLM08. Mostrar que "no reveles documentos confidenciales" en el prompt se esquiva con "soy de RR.HH.", y que el filtro por permisos no.</aside>
+</section>
+
+<section class="slide">
+  <h2>Lo que viene de afuera: modelos, plugins y datos</h2>
+  <div class="cols">
+    <div class="card bad"><h3><span class="tag bad">LLM03</span> Cadena de suministro</h3>
+      <p>Modelos descargados de un hub, plugins, librerías, servidores MCP. Corren con tus permisos o entran a tu prompt. Una <b>actualización</b> maliciosa llega sola.</p>
+      <p class="small"><b>Defensa:</b> versiones fijadas con hash, fuentes aprobadas, revisar antes de actualizar, sandbox sin red.</p></div>
+    <div class="card bad"><h3><span class="tag bad">LLM04</span> Envenenamiento de datos</h3>
+      <p>Datos de entrenamiento, fine-tuning o feedback manipulados. Puede cambiar respuestas a la vista, o esconder una <b>puerta trasera</b> que solo se activa con una frase y pasa todas las pruebas.</p>
+      <p class="small"><b>Defensa:</b> procedencia de los datos, revisión y versionado, pruebas antes y después de publicar.</p></div>
+  </div>
+  <div class="analogy" style="margin-top:14px">Contratás a un proveedor de confianza y no te enterás de que lo vendió a otra empresa: la camioneta es la misma, el chofer no. Y un manual que cualquiera puede editar termina enseñando lo que alguien quiso.</div>
+  <aside class="notes">Demo: labllm2, pestañas LLM03 (plugin que se actualiza a una versión maliciosa) y LLM04 (correcciones falsas y puerta trasera "código ZX9").</aside>
+</section>
+
+<section class="slide">
   <h2>Mapa interactivo: ¿dónde está cada riesgo?</h2>
   <div class="riskbar" id="riskbar"></div>
   <div class="flow" id="flow">
     <button class="node untrusted" data-n="user"><b>Usuario</b><small>escribe</small></button><span class="arrow">→</span>
     <button class="node" data-n="app"><b>App</b><small>arma el prompt</small></button><span class="arrow">→</span>
+    <button class="node untrusted" data-n="third"><b>Terceros</b><small>modelo · plugins · libs</small></button><span class="arrow">→</span>
     <button class="node" data-n="llm"><b>LLM</b><small>system prompt</small></button><span class="arrow">⇄</span>
     <button class="node" data-n="tools"><b>Herramientas</b><small>agente</small></button><span class="arrow">⇄</span>
     <button class="node untrusted" data-n="data"><b>Datos</b><small>DB · docs · tickets</small></button><span class="arrow">→</span>
@@ -116,8 +148,11 @@
     <tr><td><code>labllm</code></td><td><span class="tag">LLM02</span></td><td>Pedir datos de otro cliente</td><td>No poner esos datos en el contexto</td></tr>
     <tr><td><code>labllm</code></td><td><span class="tag">LLM05</span></td><td>Reseña con HTML renderizada con <code>innerHTML</code></td><td>Escapar la salida</td></tr>
     <tr><td><code>labllm</code></td><td><span class="tag">LLM09</span></td><td>Paquetes npm inventados</td><td>Verificar contra fuente confiable</td></tr>
+    <tr><td><code>labllm2</code></td><td><span class="tag">LLM03</span></td><td>Plugin que se actualiza a una versión maliciosa</td><td>Versión fijada + hash, fuentes aprobadas</td></tr>
+    <tr><td><code>labllm2</code></td><td><span class="tag">LLM04</span></td><td>Correcciones falsas y puerta trasera al reentrenar</td><td>Procedencia de los datos</td></tr>
     <tr><td><code>labllm2</code></td><td><span class="tag">LLM06</span></td><td>"Liberá espacio" → borra producción</td><td>Usuario de base de solo lectura</td></tr>
     <tr><td><code>labllm2</code></td><td><span class="tag">LLM07</span></td><td>Sacar el system prompt / "soy VIP"</td><td>Secretos y autorización fuera del prompt</td></tr>
+    <tr><td><code>labllm2</code></td><td><span class="tag">LLM08</span></td><td>RAG trae documentos de RR.HH. o uno plantado</td><td>Filtro por permisos al recuperar</td></tr>
     <tr><td><code>labllm2</code></td><td><span class="tag">LLM10</span></td><td>Salida gigante, loops, ráfagas</td><td>Límites y presupuesto</td></tr>
   </table>
   <aside class="notes">labllm corre en :3000 y labllm2 en :3001. El modo simulado es determinista para dar clase.</aside>
@@ -133,6 +168,9 @@
     <li>La salida se escapa o valida antes de renderizar o ejecutar.</li>
     <li>Hay límites de tokens, pasos, tasa y costo.</li>
     <li>Cada acción del agente queda registrada (auditoría).</li>
+    <li>Modelos, plugins y dependencias con versión fijada y de fuentes aprobadas.</li>
+    <li>Sé de dónde vienen los datos que entrenan o alimentan al modelo.</li>
+    <li>La búsqueda (RAG) filtra por permisos antes de llegar al modelo.</li>
   </ul>
   <aside class="notes">Usar como lista de revisión de diseño antes de poner un LLM en producción.</aside>
 </section>
@@ -141,15 +179,19 @@
 const RISKS = {
   LLM01: { name: 'Prompt injection', nodes: ['user', 'data'], text: 'Instrucciones que llegan por la entrada del usuario (directa) o escondidas en documentos, tickets o webs que el modelo lee (indirecta).', fix: 'Mínimo contexto y mínimo privilegio; tratar contenido externo como datos; filtro de salida.', lab: 'labllm · pestaña LLM01' },
   LLM02: { name: 'Divulgación de información sensible', nodes: ['app', 'data', 'out'], text: 'El modelo revela datos que estaban en su contexto: otros clientes, secretos, datos internos.', fix: 'No poner en el contexto lo que el usuario no puede ver. Filtro de salida como segunda capa.', lab: 'labllm · pestaña LLM02' },
+  LLM03: { name: 'Cadena de suministro', nodes: ['third', 'tools'], text: 'Modelos, plugins, librerías o servidores MCP de terceros que corren con tus permisos o entran a tu prompt. Una actualización maliciosa llega sola.', fix: 'Versiones fijadas con hash, fuentes aprobadas, revisar antes de actualizar, aislar lo que no controlás.', lab: 'labllm2 · pestaña LLM03' },
+  LLM04: { name: 'Envenenamiento de datos y modelos', nodes: ['third', 'data'], text: 'Datos de entrenamiento, fine-tuning o feedback manipulados para cambiar respuestas o esconder una puerta trasera que pasa las pruebas.', fix: 'Controlar la procedencia de los datos, revisarlos y versionarlos; probar el modelo antes y después de publicarlo.', lab: 'labllm2 · pestaña LLM04' },
   LLM05: { name: 'Manejo inseguro de la salida', nodes: ['out'], text: 'La salida del modelo se usa sin validar: HTML renderizado, SQL o comandos ejecutados.', fix: 'Tratar la salida como entrada de usuario: escapar, validar, parametrizar.', lab: 'labllm · pestaña LLM05' },
   LLM06: { name: 'Agencia excesiva', nodes: ['tools', 'data'], text: 'El agente tiene herramientas o permisos de más y ejecuta acciones dañinas ante un pedido ambiguo o una instrucción plantada.', fix: 'Herramientas mínimas, credenciales de solo lectura, confirmación humana.', lab: 'labllm2 · pestaña LLM06' },
   LLM07: { name: 'Filtración del system prompt', nodes: ['llm'], text: 'El system prompt se puede extraer. Si tiene secretos o reglas de negocio, quedan expuestos.', fix: 'Nada secreto en el prompt; autorización en el código.', lab: 'labllm2 · pestaña LLM07' },
+  LLM08: { name: 'Debilidades de vectores y embeddings', nodes: ['app', 'data'], text: 'La búsqueda del RAG trae documentos que el usuario no puede ver, o documentos plantados que ganan el ranking. Los embeddings también pueden filtrar datos.', fix: 'Filtrar por permisos al recuperar (en el código), separar índices por cliente, validar y registrar lo que se indexa.', lab: 'labllm2 · pestaña LLM08' },
   LLM09: { name: 'Desinformación', nodes: ['llm', 'out'], text: 'Respuestas falsas con apariencia segura: paquetes, APIs, datos inexistentes.', fix: 'Grounding (RAG) y verificación contra una fuente confiable.', lab: 'labllm · pestaña LLM09' },
   LLM10: { name: 'Consumo sin límites', nodes: ['user', 'llm', 'tools'], text: 'Entradas o salidas enormes, loops de agente o ráfagas que disparan costos o tumban el servicio.', fix: 'Límites de entrada, salida, pasos, tasa y presupuesto.', lab: 'labllm2 · pestaña LLM10' },
 };
 const NODES = {
   user: 'Lo que escribe la persona. Puede ser un atacante.',
   app: 'Código que arma el prompt: decide qué contexto y qué herramientas recibe el modelo. Acá viven las defensas reales.',
+  third: 'Todo lo que no escribiste vos: el modelo (y sus datos de entrenamiento), plugins, librerías, servidores MCP. Corre con tus permisos.',
   llm: 'Predice texto. No distingue instrucción de dato ni sabe quién es el usuario.',
   tools: 'Ejecutan acciones con las credenciales de la app, no con las del usuario.',
   data: 'Documentos, tickets, filas de la base, webs. Pueden traer instrucciones plantadas por terceros.',

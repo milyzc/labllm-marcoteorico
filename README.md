@@ -5,7 +5,7 @@ Slides HTML interactivas con cinco enfoques de IA. Cada enfoque es independiente
 | Deck | Enfoque | Interactivo |
 |---|---|---|
 | `01-team.html` | IA en un equipo: política, clasificación de datos, shadow AI, revisión humana, incidentes | Clasificador de datos (arrastrar y soltar) |
-| `02-componentes.html` | IA entre componentes: system prompt, RAG, herramientas, agentes; OWASP LLM01/02/05/06/07/09/10 y los labs | Mapa de la arquitectura con los riesgos por pieza |
+| `02-componentes.html` | IA entre componentes: system prompt, RAG y bases vectoriales, herramientas, agentes, terceros; OWASP LLM01 a LLM10 y los labs | Mapa de la arquitectura con los riesgos por pieza |
 | `03-dev.html` | IA para un dev con Claude Code: jerarquía de CLAUDE.md y de settings, rules, skills, commands, hooks, permisos | Capas de memoria, simulador de permisos, ejemplos |
 | `04-usuarios.html` | IA para usuarios no técnicos: tokens, ahorrar, qué no pegar, alucinaciones | Contador de tokens, costo de conversaciones largas, antes/después |
 | `05-cicd.html` | IA en CI/CD: agente de review de MR en GitLab | Pipeline paso a paso, `.gitlab-ci.yml` anotado |
@@ -20,7 +20,7 @@ python3 -m http.server 8080   # http://127.0.0.1:8080
 
 Atajos: `←` `→` navegar (incluye pasos dentro de una slide), `N` notas del presentador, `T` tema claro/oscuro, `F` pantalla completa, `?` ayuda. La URL guarda la slide (`03-dev.html#5`). Para exportar a PDF, usá imprimir del navegador.
 
-Los labs prácticos están en `labllm` (LLM01, 02, 05, 09) y `labllm2` (LLM06, 07, 10).
+Los labs prácticos están en `labllm` (LLM01, 02, 05, 09) y `labllm2` (LLM03, 04, 06, 07, 08, 10).
 
 ## Fuentes
 
