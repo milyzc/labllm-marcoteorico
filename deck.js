@@ -105,3 +105,32 @@
   const start = parseInt(location.hash.slice(1), 10);
   go(start ? start - 1 : 0);
 })();
+
+// OWASP Top 10 for LLM: every <span class="tag">LLMxx</span> gets its name in small text next to it,
+// unless the surrounding element already names the risk (e.g. a card titled "Cadena de suministro").
+(() => {
+  const RISKS = {
+    LLM01: ['Prompt injection', 'prompt injection'],
+    LLM02: ['Divulgación de información sensible', 'divulgación'],
+    LLM03: ['Cadena de suministro', 'cadena de suministro'],
+    LLM04: ['Envenenamiento de datos y modelos', 'envenenamiento'],
+    LLM05: ['Manejo inseguro de la salida', 'manejo inseguro'],
+    LLM06: ['Agencia excesiva', 'agencia excesiva'],
+    LLM07: ['Filtración del system prompt', 'filtración'],
+    LLM08: ['Debilidades de vectores y embeddings', 'vectores'],
+    LLM09: ['Desinformación', 'desinformación'],
+    LLM10: ['Consumo sin límites', 'consumo'],
+  };
+  document.querySelectorAll('.tag').forEach(tag => {
+    const r = RISKS[tag.textContent.trim()];
+    if (!r) return;
+    const [name, key] = r;
+    tag.title = name;
+    const around = (tag.parentElement?.textContent || '').toLowerCase();
+    if (around.includes(key)) return;
+    const small = document.createElement('small');
+    small.className = 'tagname';
+    small.textContent = name;
+    tag.after(small);
+  });
+})();

@@ -6,9 +6,6 @@
 <title>IA desde el modelo</title>
 <link rel="stylesheet" href="deck.css">
 <style>
-.stages{display:flex;gap:6px;flex-wrap:wrap;align-items:stretch;margin-bottom:14px}
-.stages .card{flex:1 1 180px;padding:10px 14px}
-.stages .card p{font-size:.78em;margin:0}
 .dist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .dist .r{display:grid;grid-template-columns:minmax(90px,30%) 1fr 52px;gap:8px;align-items:center;font-size:.78em}
 .dist .bar{height:16px;background:var(--accent);border-radius:4px;transition:width .2s}
@@ -26,6 +23,49 @@
 .score{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center;font-size:.8em;margin:4px 0}
 .score .bar{height:14px;background:var(--panel2);border-radius:4px;transition:width .2s}
 .score .bar.win{background:var(--ok)}
+.key{border:2px dashed var(--accent);border-radius:12px;padding:10px 16px;text-align:center;font-weight:600;margin-bottom:14px}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;justify-content:center;margin-bottom:12px}
+.flow .tile{flex:1 1 130px;max-width:190px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.flow .tile.acc{border-color:var(--accent)}
+.flow .tile.ok{border-color:var(--ok);border-width:2px}
+.flow .tile .ico{font-size:2em;line-height:1.2}
+.flow .tile b{display:block;font-size:.8em}
+.flow .tile small{display:block;font-size:.68em;color:var(--muted);margin-top:2px}
+.flow .op{align-self:center;font-size:1.4em;color:var(--accent);font-weight:700}
+.domains{justify-content:center;margin-bottom:10px}
+.ask{font-size:.8em;text-align:center;margin:0 0 8px}
+.cols .card p.ans{font-size:.8em;margin:4px 0 0}
+button.tile{font:inherit;color:inherit;cursor:pointer}
+button.tile.on{background:var(--panel);outline:2px solid var(--accent);outline-offset:2px}
+.tile .who{display:inline-block;margin-top:6px;font-size:.6em;padding:1px 6px;border-radius:6px;background:var(--panel);border:1px solid var(--line);color:var(--muted)}
+.stage-detail{font-size:.8em}
+.stage-detail h3{margin:0 0 4px}
+.stage-detail p{margin:4px 0}
+.io{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+.io span{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:3px 8px}
+.io span.out{border-color:var(--ok)}
+.io span.mid{border-color:var(--warn)}
+.io i{font-style:normal;color:var(--accent);font-weight:700}
+.io span small{display:block;font-size:.8em}
+.prefs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:8px}
+@media(max-width:700px){.prefs{grid-template-columns:1fr}}
+.prefs .card{padding:10px 12px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}
+.pair div{border:1px solid var(--line);border-radius:8px;padding:6px;font-size:.9em}
+.pair .win{border:2px solid var(--ok)}
+.pair .lose{opacity:.6}
+.tech .card{padding:10px 12px;text-align:center}
+.tech .card h3{margin:4px 0 2px;font-size:1em}
+.tech .card p{font-size:.72em;color:var(--muted);margin:0}
+.tech .ico{font-size:1.8em;line-height:1.2}
+.wrap{display:flex;gap:6px;align-items:center;justify-content:center;margin:8px 0}
+.wgrid{display:grid;grid-template-columns:repeat(6,12px);gap:3px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+.wgrid span{width:12px;height:12px;border-radius:3px;background:var(--line)}
+.wgrid.full span{background:var(--accent)}
+.wgrid.frozen{opacity:.75}
+.plug{width:26px;height:26px;border-radius:6px;background:var(--ok);display:grid;place-items:center;font-size:.75em;color:#fff;font-weight:700}
+.wrap .op{color:var(--accent);font-weight:700}
+.cloud{font-size:2em;line-height:1}
 </style>
 </head>
 <body>
@@ -39,14 +79,67 @@
 
 <section class="slide">
   <h2>Cómo se hace un LLM</h2>
-  <div class="stages">
-    <div class="card acc"><h3>1. Preentrenamiento</h3><p>Lee una porción enorme de internet, libros y código, y aprende a predecir la próxima palabra. Meses de cómputo; lo hacen pocas empresas.</p></div>
-    <div class="card acc"><h3>2. Fine-tuning</h3><p>Se sigue entrenando con ejemplos de una tarea: responder preguntas, seguir instrucciones, escribir con un estilo.</p></div>
-    <div class="card acc"><h3>3. Alineación</h3><p>Personas comparan respuestas y el modelo aprende cuáles prefieren (RLHF, DPO). Acá se aprenden los límites: qué no responder.</p></div>
-    <div class="card acc"><h3>4. Publicación</h3><p>Se evalúa, se versiona y se publica por API o como pesos descargables.</p></div>
+  <div class="flow" id="stages"></div>
+  <div class="card stage-detail" id="stageDetail"></div>
+  <div class="analogy" style="margin-top:12px">La escuela (preentrenamiento), la especialización (fine-tuning) y la inducción en la empresa sobre qué se hace y qué no (alineación).</div>
+  <p class="small muted" style="margin-top:10px">Fuentes: <a href="https://arxiv.org/abs/2203.02155" target="_blank" rel="noopener">Ouyang et al., 2022 · Training language models to follow instructions with human feedback</a> (InstructGPT: preentrenamiento → fine-tuning con instrucciones → RLHF) · <a href="https://arxiv.org/abs/2305.18290" target="_blank" rel="noopener">Rafailov et al., 2023 · Direct Preference Optimization</a></p>
+  <aside class="notes">Tocar cada etapa. En Alineación, comparar RLHF y DPO: los dos parten de los mismos datos (personas eligiendo la mejor de dos respuestas); RLHF entrena un "juez" intermedio, DPO ajusta el modelo directo. Las organizaciones casi siempre entran en la etapa 2, sobre un modelo ya preentrenado y alineado por otro.</aside>
+</section>
+
+<section class="slide">
+  <h2>Quién hace cada etapa</h2>
+  <p class="small muted" style="margin:0 0 8px">La analogía de la escuela tiene una trampa: sugiere que la alineación la hace <i>tu</i> empresa. No es así.</p>
+  <table>
+    <tr><th>Etapa</th><th>En el modelo</th><th>Analogía de la escuela</th><th>Analogía del médico</th></tr>
+    <tr><td>Preentrenamiento</td><td><span class="tag">Fabricante</span> OpenAI, Anthropic, Meta…</td><td>La escuela</td><td>La carrera de medicina</td></tr>
+    <tr><td>Alineación (RLHF, DPO)</td><td><span class="tag">Fabricante</span> antes de publicar</td><td><span class="tag bad">La empresa que te contrata</span> inducción</td><td><span class="tag ok">El colegio médico</span> juramento, código de ética</td></tr>
+    <tr><td>Fine-tuning</td><td><span class="tag ok">Tu organización</span> si hace falta</td><td>La especialización</td><td>Protocolos y casos del hospital donde trabaja</td></tr>
+  </table>
+  <div class="cols" style="margin-top:12px">
+    <div class="card bad"><h3>Por qué falla</h3><p class="small">La inducción la hace <b>tu</b> empresa. Alguien puede pensar "entonces nosotros alineamos el modelo". Pero los límites (qué no responder) ya vienen puestos por el fabricante; lo que hacés vos es fine-tuning.</p></div>
+    <div class="card ok"><h3>Analogía corregida</h3><p class="small">El médico llega al hospital <b>ya</b> recibido y con el juramento hecho. El hospital le enseña sus protocolos, no su ética. Igual que recibís un modelo ya alineado y le enseñás tu tarea.</p></div>
   </div>
-  <div class="analogy">La escuela (preentrenamiento), la especialización (fine-tuning) y la inducción en la empresa sobre qué se hace y qué no (alineación).</div>
-  <aside class="notes">Las organizaciones casi siempre entran en la etapa 2, sobre un modelo ya preentrenado y alineado por otro.</aside>
+  <div class="card" style="margin-top:12px">
+    <h3>Ejemplo: el modelo que arma estas slides</h3>
+    <div class="io">
+      <span>📚 Preentrenado <small class="muted">predice texto</small></span><i>→</i>
+      <span class="mid">🎓 Fine-tuned <small class="muted">responde a instrucciones</small></span><i>→</i>
+      <span class="mid">⚖️ Alineado <small class="muted">RLHF + Constitutional AI</small></span><i>→</i>
+      <span class="out">🚀 Publicado <small class="muted">API</small></span>
+    </div>
+    <p class="small" style="margin:6px 0 0">Claude (Anthropic) llega a vos con las cuatro etapas hechas. Vos no lo alineaste ni le hiciste fine-tuning. En Constitutional AI, parte de las comparaciones entre respuestas las hace el propio modelo siguiendo principios escritos, en vez de personas una por una.</p>
+    <p class="small" style="margin:8px 0 4px"><b>Y si tu organización arma con él un asistente legal, ¿lo vuelve a entrenar?</b> Casi nunca. Lo que hace, en este orden:</p>
+    <div class="io">
+      <span class="out">1. Prompt <small class="muted">"Sos el asistente legal del estudio. Respondé solo sobre temas legales."</small></span><i>→</i>
+      <span class="out">2. RAG <small class="muted">le da tus contratos y normas en el momento, sin reentrenar</small></span><i>→</i>
+      <span class="mid">3. Fine-tuning <small class="muted">solo si el comportamiento no alcanza y hay cientos de ejemplos buenos</small></span>
+    </div>
+    <p class="small" style="margin:6px 0 0">El asistente legal es <b>el mismo modelo</b> con un prompt que le dice quién es y herramientas que le dan los documentos. "Que solo responda de legales" se logra con el prompt y controles, no con fine-tuning: el fine-tuning enseña <i>cómo</i> responder, no <i>de qué</i>. Y depende del proveedor: con modelos de pesos abiertos (Llama, Mistral) lo hacés vos; con modelos cerrados, solo si el proveedor lo ofrece y en los modelos en que lo ofrece.</p>
+    <p class="small muted" style="margin:6px 0 0">Fuentes: <a href="https://arxiv.org/abs/2212.08073" target="_blank" rel="noopener">Bai et al., 2022 · Constitutional AI</a> · <a href="https://developers.openai.com/api/docs/guides/optimizing-llm-accuracy" target="_blank" rel="noopener">OpenAI · Optimizing LLM Accuracy</a> (orden prompt → RAG → fine-tuning) · <a href="https://www.anthropic.com/news/fine-tune-claude-3-haiku" target="_blank" rel="noopener">Anthropic · Fine-tune Claude 3 Haiku in Amazon Bedrock</a> (fine-tuning de Claude: solo ciertos modelos y vía Bedrock)</p>
+  </div>
+  <aside class="notes">Pedirle al modelo en vivo "¿vos venís fine-tuneado y alineado?": responde que sí y que no conoce los detalles internos de su entrenamiento. Idea fuerza: recibís un modelo ya alineado; tu fine-tuning puede debilitar esa alineación (slide de riesgos).</aside>
+</section>
+
+<section class="slide">
+  <h2>Fine-tuning en una imagen</h2>
+  <div class="key">💡 Fine-tuning adapta un modelo existente para una tarea más específica.</div>
+  <div class="row domains" id="domains"></div>
+  <div class="flow">
+    <div class="tile"><div class="ico">🤖</div><b>Modelo general</b><small>Ya entrenado con muchos datos</small></div>
+    <span class="op">+</span>
+    <div class="tile acc"><div class="ico">📚</div><b>Datos especializados</b><small id="dData"></small></div>
+    <span class="op">→</span>
+    <div class="tile acc"><div class="ico">⚙️</div><b>Fine-tuning</b><small>Se ajusta el modelo con los nuevos datos</small></div>
+    <span class="op">→</span>
+    <div class="tile ok"><div class="ico" id="dModelIco">🎯</div><b id="dModel">Modelo especializado</b><small>Optimizado para una tarea concreta</small></div>
+  </div>
+  <p class="ask" id="dAsk"></p>
+  <div class="cols">
+    <div class="card"><h3>🤖 Modelo base</h3><p class="small muted" style="margin:0">Sabe de muchos temas, de forma general.</p><p class="ans" id="dBase"></p></div>
+    <div class="card ok"><h3 id="dSpecTitle">🎯 Modelo especializado</h3><p class="small muted" style="margin:0">Está ajustado para una tarea o dominio.</p><p class="ans" id="dSpec"></p></div>
+  </div>
+  <p class="small muted" style="margin-top:10px">Quién hace esto: productos cuyo negocio <i>es</i> la IA, con datos y equipo de ML (siguiente slide). El asistente legal o de soporte de tu organización es el mismo modelo publicado con prompt + RAG (slide anterior). Para datos que cambian, RAG.</p>
+  <aside class="notes">Recorrer los tres casos. En los tres lo que cambia es formato, tono o vocabulario, no lo que el modelo sabe. Ninguno es "el chat de la empresa": el único in-house es el clasificador de tickets, y es barato porque la tarea es acotada y repetida. Si cambia la política de envíos, eso va por RAG, no por reentrenar.</aside>
 </section>
 
 <section class="slide">
@@ -65,19 +158,37 @@
       <li>"Enseñarle" información sensible: puede repetirla.</li>
     </ul></div>
   </div>
+  <div class="card" style="margin-top:12px">
+    <h3>Ejemplos públicos que sí hacen fine-tuning</h3>
+    <table>
+      <tr><th>Producto</th><th>Qué ajustaron</th><th>Por qué</th><th>Fuente</th></tr>
+      <tr><td>GitHub Copilot (original)</td><td>GPT ajustado con código (Codex)</td><td>Formato muy preciso y velocidad</td><td><a href="https://arxiv.org/abs/2107.03374" target="_blank" rel="noopener">Chen et al., 2021</a></td></tr>
+      <tr><td>Cursor Tab</td><td>Modelo propio entrenado para predecir ediciones</td><td>Latencia y comportamiento específico</td><td><a href="https://cursor.com/blog/tab-update" target="_blank" rel="noopener">Cursor · Tab update</a></td></tr>
+      <tr><td>Harvey (legal)</td><td>Modelo custom con OpenAI sobre jurisprudencia</td><td>Dominio con mucha data; RAG y fine-tuning por API no alcanzaron</td><td><a href="https://openai.com/index/harvey" target="_blank" rel="noopener">OpenAI · Harvey</a></td></tr>
+      <tr><td>Med-PaLM 2 (Google)</td><td>PaLM ajustado con datos médicos</td><td>Vocabulario y razonamiento de un dominio</td><td><a href="https://arxiv.org/abs/2305.09617" target="_blank" rel="noopener">Singhal et al., 2023</a></td></tr>
+      <tr><td>Clasificadores internos</td><td>Modelos chicos (Llama y similares) para tickets, facturas, spam</td><td>Tarea repetida; más barato que un modelo grande</td><td><a href="https://developers.openai.com/api/docs/guides/model-optimization" target="_blank" rel="noopener">OpenAI · Model optimization</a></td></tr>
+    </table>
+    <p class="small muted" style="margin:6px 0 0">El patrón: empresas cuyo producto <i>es</i> la IA, con datos y equipo de ML. El chat legal o de soporte de una empresa típica es prompt + RAG sobre un modelo publicado.</p>
+  </div>
   <p class="small muted" style="margin-top:10px">Para conocimiento que cambia o tiene dueño, lo habitual es RAG (enfoque 06): el modelo busca y lee en el momento.</p>
   <p class="small muted">Fuentes: <a href="https://developers.openai.com/api/docs/guides/optimizing-llm-accuracy" target="_blank" rel="noopener">OpenAI · Optimizing LLM Accuracy</a> (contexto → RAG, comportamiento → fine-tuning), <a href="https://developers.openai.com/api/docs/guides/model-optimization" target="_blank" rel="noopener">OpenAI · Model optimization</a> (casos de uso), <a href="https://arxiv.org/abs/2312.05934" target="_blank" rel="noopener">Ovadia et al., 2023 · Fine-Tuning or Retrieval?</a> (RAG supera al fine-tuning para agregar conocimiento).</p>
   <aside class="notes">Error frecuente: querer hacer fine-tuning "para que sepa nuestros datos". Casi siempre lo que se necesita es RAG.</aside>
 </section>
 
 <section class="slide">
-  <h2>Técnicas: completo o con adaptadores</h2>
-  <div class="cols">
-    <div class="card"><h3>Fine-tuning completo</h3><p>Se ajustan todos los pesos del modelo. Caro, necesita mucho hardware y genera una copia entera del modelo por cada versión.</p></div>
-    <div class="card"><h3>LoRA / adaptadores</h3><p>El modelo base queda congelado y se entrena una pieza chica que se le "enchufa". Barato, rápido y fácil de distribuir: un archivo de pocos megas.</p></div>
-    <div class="card"><h3>Por API</h3><p>El proveedor entrena sobre su modelo con tus ejemplos. No manejás hardware, pero tus datos de entrenamiento viajan al proveedor.</p></div>
-  </div>
-  <div class="analogy" style="margin-top:14px">LoRA es como ponerle una lente a una cámara: la cámara es la misma, la foto cambia. Y cualquiera puede venderte una lente.</div>
+  <h2>Técnicas: ¿qué parte del modelo tocás?</h2>
+  <p class="small muted" style="margin:0 0 8px">Un modelo es una tabla enorme de números (los <b>pesos</b>). Decidiste hacer fine-tuning: hay tres formas de hacerlo.</p>
+  <div class="cols c3 tech" id="tech"></div>
+  <table style="margin-top:12px">
+    <tr><th></th><th>🏠 Completo</th><th>🔍 LoRA / adaptador</th><th>☁️ Por API</th></tr>
+    <tr><td>Qué cambia</td><td>Todos los pesos</td><td>Nada del modelo; se agrega una pieza chica</td><td>Lo que el proveedor decida</td></tr>
+    <tr><td>Hardware</td><td><span class="tag bad">Muchas GPUs</span></td><td><span class="tag ok">Una GPU común</span></td><td><span class="tag ok">Ninguno</span></td></tr>
+    <tr><td>Resultado</td><td>Otra copia entera del modelo (cientos de GB) por versión</td><td>Un archivo de pocos MB que se enchufa al modelo base</td><td>Un nombre de modelo nuevo para llamar por API</td></tr>
+    <tr><td>Tus datos de entrenamiento</td><td><span class="tag ok">Quedan en tu infra</span></td><td><span class="tag ok">Quedan en tu infra</span></td><td><span class="tag warn">Viajan al proveedor</span></td></tr>
+    <tr><td>Quién lo usa</td><td>Laboratorios y empresas grandes</td><td>Casi todos los que entrenan por su cuenta</td><td>Quien no quiere manejar ML ni hardware</td></tr>
+  </table>
+  <div class="analogy" style="margin-top:12px">LoRA es como ponerle una lente a una cámara: la cámara es la misma, la foto cambia. Y cualquiera puede venderte una lente.</div>
+  <p class="small muted" style="margin-top:10px">Fuentes: <a href="https://arxiv.org/abs/2106.09685" target="_blank" rel="noopener">Hu et al., 2021 · LoRA: Low-Rank Adaptation of Large Language Models</a> · <a href="https://developers.openai.com/api/docs/guides/supervised-fine-tuning" target="_blank" rel="noopener">OpenAI · Supervised fine-tuning</a> (por API) · <a href="https://aws.amazon.com/blogs/aws/fine-tuning-for-anthropics-claude-3-haiku-model-in-amazon-bedrock-is-now-generally-available/" target="_blank" rel="noopener">AWS · Fine-tuning Claude 3 Haiku en Bedrock</a> (los datos quedan en tu cuenta de AWS)</p>
   <aside class="notes">Que los adaptadores sean fáciles de compartir es una ventaja y un riesgo de cadena de suministro (LLM03).</aside>
 </section>
 
@@ -133,7 +244,7 @@
     </ul></div>
     <div class="card ok"><h3>Modelo</h3><ul>
       <li>Modelos base y adaptadores de fuentes confiables, con hash verificado.</li>
-      <li>Formato <code>safetensors</code> en lugar de pickle.</li>
+      <li>Formato <code>safetensors</code> en lugar de pickle (abajo).</li>
       <li>Modelo y dataset versionados juntos: saber qué datos produjeron qué versión.</li>
     </ul></div>
     <div class="card ok"><h3>Evaluación</h3><ul>
@@ -142,7 +253,16 @@
       <li>Monitorear respuestas en producción.</li>
     </ul></div>
   </div>
-  <aside class="notes">Relación con el enfoque 01: quién puede aportar datos al entrenamiento es una decisión de equipo.</aside>
+  <div class="cols" style="margin-top:12px">
+    <div class="card bad"><h3>Pickle <span class="small muted"><code>.bin</code> <code>.pt</code> <code>.pkl</code> <code>.ckpt</code></span></h3>
+      <div class="io"><span>📦 Archivo del modelo</span><i>→</i><span class="mid">números + <b>instrucciones</b> para reconstruirlo</span><i>→</i><span style="border-color:var(--bad)">💥 Python las <b>ejecuta</b> al cargar</span></div>
+      <p class="small" style="margin:4px 0 0">Formato viejo de Python para guardar cualquier objeto; PyTorch lo usó siempre. Si alguien metió adentro un <code>os.system(...)</code>, corre en tu máquina con solo <b>cargar</b> el modelo. Descargar un <code>.bin</code> de un hub es como descargar un <code>.exe</code> y ejecutarlo.</p></div>
+    <div class="card ok"><h3>safetensors <span class="small muted"><code>.safetensors</code></span></h3>
+      <div class="io"><span>📦 Archivo del modelo</span><i>→</i><span class="out">solo <b>números</b> y sus dimensiones</span><i>→</i><span class="out">🖼️ se lee como una imagen: nada que ejecutar</span></div>
+      <p class="small" style="margin:4px 0 0">Formato de Hugging Face creado para esto. Hoy es el default del hub y carga más rápido. Si un modelo solo viene en pickle: cargarlo en un entorno aislado y convertirlo, o como mínimo <code>torch.load(..., weights_only=True)</code>.</p></div>
+  </div>
+  <p class="small muted" style="margin-top:8px">Fuentes: <a href="https://docs.python.org/3/library/pickle.html" target="_blank" rel="noopener">Python · pickle</a> (la doc advierte: no cargar datos no confiables) · <a href="https://huggingface.co/docs/hub/security-pickle" target="_blank" rel="noopener">Hugging Face · Pickle scanning</a> · <a href="https://huggingface.co/docs/safetensors" target="_blank" rel="noopener">Hugging Face · safetensors</a> · <a href="https://docs.pytorch.org/docs/stable/generated/torch.load.html" target="_blank" rel="noopener">PyTorch · torch.load</a> (<code>weights_only</code>)</p>
+  <aside class="notes">Relación con el enfoque 01: quién puede aportar datos al entrenamiento es una decisión de equipo. Pickle: conecta con LLM03 de la slide de riesgos; el escáner del hub no atrapa todo, por eso se exige el formato y no se confía en el escáner.</aside>
 </section>
 
 <section class="slide">
@@ -159,6 +279,87 @@
 </section>
 
 <script>
+// LLM pipeline: click a stage to see what goes in and what comes out
+const STAGES = [
+  { ico: '📚', name: '1. Preentrenamiento', short: 'Aprende a predecir la próxima palabra', who: 'pocas empresas',
+    io: ['Internet, libros y código', 'Meses de cómputo', 'Modelo base'],
+    text: 'Lee una porción enorme de texto y aprende a predecir la próxima palabra. Sabe mucho, pero todavía no sabe conversar: completa texto.' },
+  { ico: '🎓', name: '2. Fine-tuning', short: 'Aprende a seguir instrucciones', who: 'el fabricante; tu organización solo a veces',
+    io: ['Ejemplos pregunta → respuesta', 'Más entrenamiento', 'Modelo que sigue instrucciones'],
+    text: 'Se sigue entrenando con ejemplos de una tarea: responder preguntas, seguir instrucciones, escribir con un estilo.' },
+  { ico: '⚖️', name: '3. Alineación', short: 'Aprende qué respuestas preferimos', who: 'RLHF · DPO',
+    io: ['Personas eligen la mejor de dos respuestas', 'RLHF o DPO', 'Modelo útil y con límites'],
+    text: 'El modelo aprende qué respuestas prefieren las personas: más útiles, más honestas, y qué no responder.', prefs: true },
+  { ico: '🚀', name: '4. Publicación', short: 'Se evalúa y se distribuye', who: 'API o pesos',
+    io: ['Modelo alineado', 'Evaluación y versionado', 'API o pesos descargables'],
+    text: 'Se evalúa calidad y seguridad, se versiona y se publica por API o como pesos descargables.' },
+];
+const PREFS = `<div class="prefs">
+  <div class="card"><b>RLHF</b> <span class="small muted">Reinforcement Learning from Human Feedback (aprendizaje por refuerzo con retroalimentación humana)</span>
+    <div class="pair"><div class="win">✅ A: “Entrá a Mi cuenta → Reclamos.”</div><div class="lose">❌ B: “Pasame el número de tu tarjeta.”</div></div>
+    <div class="io"><span>👥 Personas eligen A</span><i>→</i><span class="mid">🧑‍⚖️ Modelo “juez” que puntúa respuestas</span><i>→</i><span class="out">🤖 El LLM practica y busca más puntaje</span></div>
+    <p class="small muted">Dos pasos: primero se entrena un juez (modelo de recompensa), después el LLM aprende por prueba y error a conformarlo. Fuente: <a href="https://arxiv.org/abs/2203.02155" target="_blank" rel="noopener">Ouyang et al., 2022</a></p></div>
+  <div class="card"><b>DPO</b> <span class="small muted">Direct Preference Optimization (optimización directa de preferencias)</span>
+    <div class="pair"><div class="win">✅ A: “Entrá a Mi cuenta → Reclamos.”</div><div class="lose">❌ B: “Pasame el número de tu tarjeta.”</div></div>
+    <div class="io"><span>👥 Personas eligen A</span><i>→</i><span class="out">🤖 Se ajusta el LLM directo: A más probable, B menos</span></div>
+    <p class="small muted">Mismos datos, un solo paso y sin juez intermedio. Más simple y barato; llega a un resultado parecido. Fuente: <a href="https://arxiv.org/abs/2305.18290" target="_blank" rel="noopener">Rafailov et al., 2023</a></p></div>
+</div>`;
+const stagesEl = document.getElementById('stages');
+stagesEl.innerHTML = STAGES.map((s, i) => `${i ? '<span class="op">→</span>' : ''}<button class="tile acc" data-i="${i}"><div class="ico">${s.ico}</div><b>${s.name}</b><small>${s.short}</small><span class="who">${s.who}</span></button>`).join('');
+function renderStage(i) {
+  const s = STAGES[i];
+  document.getElementById('stageDetail').innerHTML = `<h3>${s.ico} ${s.name}</h3><p>${s.text}</p>
+    <div class="io"><span>${s.io[0]}</span><i>→</i><span class="mid">${s.io[1]}</span><i>→</i><span class="out">${s.io[2]}</span></div>${s.prefs ? PREFS : ''}`;
+  stagesEl.querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+}
+stagesEl.querySelectorAll('button').forEach(b => b.onclick = () => renderStage(+b.dataset.i));
+renderStage(0);
+
+// Fine-tuning techniques: what part of the model gets touched
+const cells = n => Array.from({ length: n }, () => '<span></span>').join('');
+document.getElementById('tech').innerHTML = [
+  { ico: '🏠', name: 'Completo', how: 'Se reescriben todos los pesos. Como repintar la casa entera.',
+    vis: `<div class="wgrid full">${cells(24)}</div>` },
+  { ico: '🔍', name: 'LoRA / adaptador', how: 'El modelo queda congelado 🧊. Se entrena una pieza chica que se le enchufa.',
+    vis: `<div class="wgrid frozen">${cells(24)}</div><span class="op">+</span><div class="plug">🔌</div>` },
+  { ico: '☁️', name: 'Por API', how: 'Le mandás tus ejemplos al proveedor y él entrena en su infra.',
+    vis: `<div class="wgrid frozen">${cells(24)}</div><span class="op">→</span><div class="cloud">☁️</div>` },
+].map(t => `<div class="card"><div class="ico">${t.ico}</div><h3>${t.name}</h3><div class="wrap">${t.vis}</div><p>${t.how}</p></div>`).join('');
+
+// Fine-tuning visual: same base model, different specialized data per domain
+const DOMAINS = [
+  { id: 'tickets', label: '🛒 ShopAR · clasificador de tickets', ico: '🏷️', model: 'Clasificador de tickets',
+    data: 'Miles de tickets ya etiquetados por el equipo de soporte',
+    ask: '“Hace 10 días que no llega mi pedido y nadie me responde.”',
+    base: 'Lamento la demora. Te sugiero revisar el número de seguimiento, contactar a la empresa de envíos y, si no hay novedades, escribir al vendedor con tu número de pedido.',
+    spec: '{"categoria": "envio", "prioridad": "alta"}' },
+  { id: 'codigo', label: '💻 Código · Copilot', ico: '💻', model: 'Autocompletado de código (Codex)',
+    data: 'Código público de GitHub',
+    ask: '// función que valide un email',
+    base: 'Para validar un email conviene usar una expresión regular, aunque validar emails con regex tiene límites. Un ejemplo en JavaScript sería...',
+    spec: 'function isEmail(s) { return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(s); }' },
+  { id: 'legal', label: '⚖️ Legal · Harvey', ico: '📜', model: 'Harvey (producto legal)',
+    data: 'Jurisprudencia y casos; entrenado junto con OpenAI',
+    ask: '“Revisá esta cláusula de rescisión.”',
+    base: 'La cláusula permite terminar el contrato. Te sugiero consultar con un abogado.',
+    spec: 'Memo: cláusula, riesgo, precedente aplicable y recomendación, con citas en el formato que usan los abogados.' },
+];
+function renderDomain(id) {
+  const d = DOMAINS.find(x => x.id === id);
+  document.getElementById('dData').textContent = d.data;
+  document.getElementById('dModelIco').textContent = d.ico;
+  document.getElementById('dModel').textContent = d.model;
+  document.getElementById('dAsk').innerHTML = `<b>Pregunta:</b> ${d.ask}`;
+  document.getElementById('dBase').textContent = d.base;
+  document.getElementById('dSpecTitle').textContent = `${d.ico} ${d.model}`;
+  document.getElementById('dSpec').textContent = d.spec;
+  domains.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.d === id));
+}
+const domains = document.getElementById('domains');
+domains.innerHTML = DOMAINS.map(d => `<button class="b ghost" data-d="${d.id}">${d.label}</button>`).join('');
+domains.querySelectorAll('button').forEach(b => b.onclick = () => renderDomain(b.dataset.d));
+renderDomain('tickets');
+
 // Tiny next-word model: counts what followed the longest seen context (up to 3 words)
 const BASE = [
   ['los reclamos se hacen desde mi cuenta .', 6],

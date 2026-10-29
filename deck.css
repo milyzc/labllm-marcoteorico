@@ -42,6 +42,7 @@ kbd{background:var(--panel2);border:1px solid var(--line);border-bottom-width:2p
 .tag{display:inline-block;font-size:.7em;font-weight:700;padding:2px 9px;border-radius:99px;background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent);margin:0 4px 4px 0;white-space:nowrap}
 .tag.bad{background:color-mix(in srgb,var(--bad) 20%,transparent);color:var(--bad)}
 .tag.ok{background:color-mix(in srgb,var(--ok) 20%,transparent);color:var(--ok)}
+.tagname{font-size:.7em;font-weight:400;color:var(--muted);margin:0 8px 4px 0;white-space:nowrap}
 .tag.warn{background:color-mix(in srgb,var(--warn) 22%,transparent);color:var(--warn)}
 table{border-collapse:collapse;width:100%;font-size:.82em}
 th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
